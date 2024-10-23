@@ -2,18 +2,21 @@
 set -e
 
 # Warten, bis die PostgreSQL-Datenbank verfügbar ist
-echo "Warte auf PostgreSQL-Datenbank..."
-until pg_isready -h localhost -p 5432 -U "$POSTGRES_USER"; do
-  sleep 1
-done
+echo "Warte auf PostgreSQL-Datenbank..." 
 
-# SQL-Datei ausführen, falls vorhanden
-if [ -f /docker-entrypoint-initdb.d/testdatabase.sql ]; then
-  echo "Starte die Datenbankinitialisierung..."
-  psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -f /docker-entrypoint-initdb.d/testdatabase.sql
-else
-  echo "SQL-Datei nicht gefunden."
-fi
+psql -v ON_ERROR_STOP=1 --username user << EOSQL
 
-# PostgreSQL-Prozess starten
-exec postgres
+        CREATE USER user WITH PASSWORD 'password';
+        CREATE DATABASE my_database;
+        GRANT ALL PRIVILEGES ON DATABASE my_database TO user;
+
+EOSQL
+
+psql -v ON_ERROR_STOP=1 --username user \
+  --dbname=my_database --command "GRANT ALL ON SCHEMA public TO user"
+
+psql -v ON_ERROR_STOP=1 --username user --dbname=my_database \
+  --file /home/SQLData/tableSchema.sql
+
+psql -v ON_ERROR_STOP=1 --username user --dbname=my_database \
+  --file /home/SQLData/insertData.sql
