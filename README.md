@@ -95,7 +95,7 @@ DB_PORT=5432
 
 ### License
 
-DataBack is released under the [MIT License](LICENSE). 
+DataBack is released under the [Buesnauer_Ultras](LICENSE). 
 
 ---
 
