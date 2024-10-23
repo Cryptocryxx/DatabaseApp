@@ -11,4 +11,4 @@ services:
       - "5432:5432"
     volumes:
       - ./init-db.sh:/docker-entrypoint-initdb.d/init-db.sh:z
-      - ../SQLData:/home/SQLData:zs
+      - ../SQLData:/home/SQLData:z
