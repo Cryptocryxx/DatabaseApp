@@ -13,8 +13,11 @@ public class main implements Callable<Integer> {
     private String destination;
 
     public static void main(String[] args) {
-        int exitCode = new CommandLine(new main()).execute(args);
-        System.exit(exitCode);
+        //int exitCode = new CommandLine(new main()).execute(args);
+        //System.exit(exitCode);
+
+
+
     }
     @Override
     public Integer call() throws Exception {
