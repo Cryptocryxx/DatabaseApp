@@ -5,6 +5,6 @@
         <property name="hibernate.connection.url">jdbc:postgresql://localhost:5432/my_database</property>
         <property name="hibernate.connection.username">user</property>
         <property name="hibernate.connection.password">password</property>
-        <mapping class="org.example.Hibernate.person"/>
+        <mapping class="org.example.Hibernate.Database"/>
     </session-factory>
 </hibernate-configuration>
