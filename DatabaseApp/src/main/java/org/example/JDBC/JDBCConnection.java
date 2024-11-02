@@ -14,6 +14,8 @@ public class JDBCConnection {
 
         StringBuilder tableScript = new StringBuilder();
         StringBuilder constraintsScript = new StringBuilder();
+        JSONExporter jsonExporter = new JSONExporter(url, user, password);
+        jsonExporter.exportDataToJSON();
 
         try (Connection conn = DriverManager.getConnection(url, user, password)) {
             String tableQuery = "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'";
@@ -58,8 +60,8 @@ public class JDBCConnection {
         }
 
         // Skripte in Dateien schreiben
-        try (FileWriter tableFile = new FileWriter("create_tables.sql");
-             FileWriter constraintFile = new FileWriter("add_constraints.sql")) {
+        try (FileWriter tableFile = new FileWriter("./src/main/java/org/example/TestData/create_tables.sql");
+             FileWriter constraintFile = new FileWriter("./src/main/java/org/example/TestData/add_constraints.sql")) {
             tableFile.write(tableScript.toString());
             constraintFile.write(constraintsScript.toString());
             System.out.println("SQL-Skripte erfolgreich erstellt.");
