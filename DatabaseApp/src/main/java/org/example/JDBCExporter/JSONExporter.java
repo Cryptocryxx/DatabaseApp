@@ -1,4 +1,4 @@
-package org.example.JDBC;
+package org.example.JDBCExporter;
 
 
 import java.io.File;

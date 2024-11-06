@@ -4,11 +4,18 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="29117c9f-51e8-45bf-9a7d-97e8e2e91fa4" name="Changes" comment="Hibernate init">
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/example/JDBC/JSONExporter.java" afterDir="false" />
+    <list default="true" id="29117c9f-51e8-45bf-9a7d-97e8e2e91fa4" name="Changes" comment="Logger">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/JDBC/JDBCConnection.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/JDBC/JDBCConnection.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/Hibernate/Column.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/Hibernate/Database.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/Hibernate/HibernateConnection.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/Hibernate/Table.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/JDBC/JDBCConnection.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/JDBC/JSONExporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/JDBCExporter/JSONExporter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/JDBCExporter/JDBCConnection.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/JDBCExporter/JDBCConnection.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/Postgres/init-db.sh" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/Postgres/init-db.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/TestData/add_constraints.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/TestData/create_tables.sql" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -57,6 +64,7 @@
     "Application.App.executor": "Run",
     "Application.HibernateConnection.executor": "Run",
     "Application.main.executor": "Run",
+    "Application.org.example.JDBCExporter.JDBCConnection.executor": "Run",
     "Docker.Postgres.postgres: Compose Deployment.executor": "Run",
     "Docker.Postgres: Compose Deployment.executor": "Run",
     "Docker.example.postgres: Compose Deployment.executor": "Run",
@@ -86,13 +94,7 @@
       <recent name="C:\Users\Joel Starkov\Documents\Studium\4.Semester\DatabaseAndAppDev\project\DatabaseApp\DatabaseApp\src\main\java\org\example\Postgres" />
     </key>
   </component>
-  <component name="RunManager" selected="Application.JDBCConnection">
-    <configuration default="true" type="docker-deploy" factoryName="docker-compose.yml" temporary="true">
-      <deployment type="docker-compose.yml">
-        <settings />
-      </deployment>
-      <method v="2" />
-    </configuration>
+  <component name="RunManager" selected="Application.org.example.JDBCExporter.JDBCConnection">
     <configuration name="HibernateConnection" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="org.example.Hibernate.HibernateConnection" />
       <module name="DatabaseApp" />
@@ -111,7 +113,7 @@
       <module name="DatabaseApp" />
       <extension name="coverage">
         <pattern>
-          <option name="PATTERN" value="org.example.JDBC.*" />
+          <option name="PATTERN" value="org.example.JDBCExporter.*" />
           <option name="ENABLED" value="true" />
         </pattern>
       </extension>
@@ -132,6 +134,19 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
+    <configuration name="org.example.JDBCExporter.JDBCConnection" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="org.example.JDBCExporter.JDBCConnection" />
+      <module name="DatabaseApp" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="org.example.JDBCExporter.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="Postgres: Compose Deployment" type="docker-deploy" factoryName="docker-compose.yml" temporary="true" server-name="Docker">
       <deployment type="docker-compose.yml">
         <settings>
@@ -140,21 +155,16 @@
       </deployment>
       <method v="2" />
     </configuration>
-    <configuration name="Postgres.postgres: Compose Deployment" type="docker-deploy" factoryName="docker-compose.yml" temporary="true" server-name="Docker">
+    <configuration default="true" type="docker-deploy" factoryName="docker-compose.yml" temporary="true">
       <deployment type="docker-compose.yml">
-        <settings>
-          <option name="services">
-            <list>
-              <option value="postgres" />
-            </list>
-          </option>
-          <option name="sourceFilePath" value="src/main/java/org/example/Postgres/docker-compose.yml" />
-        </settings>
+        <settings />
       </deployment>
       <method v="2" />
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Application.org.example.JDBCExporter.JDBCConnection" />
+        <item itemvalue="Docker.Postgres: Compose Deployment" />
         <item itemvalue="Application.JDBCConnection" />
         <item itemvalue="Application.HibernateConnection" />
         <item itemvalue="Application.main" />
@@ -237,6 +247,7 @@
     <MESSAGE value="switched compose to postgres latest" />
     <MESSAGE value="fixed init-db.sh problems" />
     <MESSAGE value="Hibernate init" />
-    <option name="LAST_COMMIT_MESSAGE" value="Hibernate init" />
+    <MESSAGE value="Logger" />
+    <option name="LAST_COMMIT_MESSAGE" value="Logger" />
   </component>
 </project>
