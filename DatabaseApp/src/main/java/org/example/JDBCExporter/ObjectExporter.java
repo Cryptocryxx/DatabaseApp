@@ -21,7 +21,8 @@ public class ObjectExporter {
         this.filePath = filePath;
     }
 
-    public void exportData() throws SQLException {
+    public Map<String, String> exportData(String version) throws SQLException {
+        Map<String, String> dataFiles = new HashMap<>();
         logger.info("Starting exporting Data to JSON...");
         String query = String.format("""
             SELECT table_name
@@ -33,13 +34,15 @@ public class ObjectExporter {
                 String tableName = tables.getString("table_name");
                 List<Map<String, Object>> data = fetchDataFromTable(tableName);
 
-                String newFilePath = String.format("%s/%s.json", filePath, tableName);
+                String newFilePath = String.format("%s/%s_%s.json", filePath, tableName, version);
                 fileWriter.writeJSONFile(newFilePath, data);
+                dataFiles.put(tableName, newFilePath);
             }
             logger.info("Data export to JSON completed successfully.");
         } catch (IOException e) {
             logger.error(String.format("SQL Error during data export: %s", e.getMessage()));
         }
+        return dataFiles;
     }
 
     private List<Map<String, Object>> fetchDataFromTable(String tableName) throws SQLException {
