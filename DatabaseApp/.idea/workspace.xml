@@ -4,18 +4,17 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="29117c9f-51e8-45bf-9a7d-97e8e2e91fa4" name="Changes" comment="Logger">
+    <list default="true" id="29117c9f-51e8-45bf-9a7d-97e8e2e91fa4" name="Changes" comment="Ordner">
+      <change afterPath="$PROJECT_DIR$/src/main/java/org/example/JDBCExporter/MetaDataExporter.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/org/example/Test.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/Hibernate/Column.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/Hibernate/Database.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/Hibernate/HibernateConnection.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/Hibernate/Table.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/JDBC/JDBCConnection.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/JDBC/JSONExporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/JDBCExporter/JSONExporter.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/org/example/JDBCExporter/JDBCConnection.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/JDBCExporter/JDBCConnection.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/Postgres/init-db.sh" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/Postgres/init-db.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/TestData/add_constraints.sql" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/TestData/create_tables.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/JDBCExporter/JSONExporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/JDBCExporter/JSONExporter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/TestData/Order.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/TestData/orderproduct.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/TestData/person.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/TestData/persondetail.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/TestData/product.json" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -41,7 +40,7 @@
   <component name="GithubPullRequestsUISettings">{
   &quot;selectedUrlAndAccountId&quot;: {
     &quot;url&quot;: &quot;https://github.com/Cryptocryxx/DatabaseApp.git&quot;,
-    &quot;accountId&quot;: &quot;e4f11597-9c0b-45eb-8478-4a3659c085ab&quot;
+    &quot;accountId&quot;: &quot;8a2ddd4f-6d60-473a-9689-b556f30a852e&quot;
   }
 }</component>
   <component name="KubernetesApiPersistence">{}</component>
@@ -63,6 +62,8 @@
   "keyToString": {
     "Application.App.executor": "Run",
     "Application.HibernateConnection.executor": "Run",
+    "Application.Test.executor": "Debug",
+    "Application.TestLogger.executor": "Run",
     "Application.main.executor": "Run",
     "Application.org.example.JDBCExporter.JDBCConnection.executor": "Run",
     "Docker.Postgres.postgres: Compose Deployment.executor": "Run",
@@ -79,7 +80,7 @@
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "database.query.execution",
+    "settings.editor.selected.configurable": "reference.settingsdialog.IDE.editor.colors.Color Scheme Font",
     "vue.rearranger.settings.migration": "true"
   },
   "keyToStringList": {
@@ -95,19 +96,6 @@
     </key>
   </component>
   <component name="RunManager" selected="Application.org.example.JDBCExporter.JDBCConnection">
-    <configuration name="HibernateConnection" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
-      <option name="MAIN_CLASS_NAME" value="org.example.Hibernate.HibernateConnection" />
-      <module name="DatabaseApp" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="org.example.Hibernate.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
     <configuration name="JDBCConnection" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="org.example.JDBC.JDBCConnection" />
       <module name="DatabaseApp" />
@@ -121,12 +109,25 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="main" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
-      <option name="MAIN_CLASS_NAME" value="org.example.main" />
+    <configuration name="Test" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="org.example.Test" />
       <module name="DatabaseApp" />
       <extension name="coverage">
         <pattern>
           <option name="PATTERN" value="org.example.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="TestLogger" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="org.example.Logger.TestLogger" />
+      <module name="DatabaseApp" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="org.example.Logger.*" />
           <option name="ENABLED" value="true" />
         </pattern>
       </extension>
@@ -164,10 +165,10 @@
     <recent_temporary>
       <list>
         <item itemvalue="Application.org.example.JDBCExporter.JDBCConnection" />
+        <item itemvalue="Application.TestLogger" />
         <item itemvalue="Docker.Postgres: Compose Deployment" />
+        <item itemvalue="Application.Test" />
         <item itemvalue="Application.JDBCConnection" />
-        <item itemvalue="Application.HibernateConnection" />
-        <item itemvalue="Application.main" />
       </list>
     </recent_temporary>
   </component>
@@ -194,6 +195,11 @@
       <workItem from="1728565294351" duration="2320000" />
       <workItem from="1729074461272" duration="3419000" />
       <workItem from="1730278788754" duration="4906000" />
+      <workItem from="1730927525863" duration="634000" />
+      <workItem from="1730968845197" duration="26000" />
+      <workItem from="1731017667451" duration="1386000" />
+      <workItem from="1731492533146" duration="1138000" />
+      <workItem from="1731493699831" duration="6959000" />
     </task>
     <task id="LOCAL-00001" summary="yml and docker activated">
       <option name="closed" value="true" />
@@ -235,7 +241,15 @@
       <option name="project" value="LOCAL" />
       <updated>1730279831796</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="Ordner">
+      <option name="closed" value="true" />
+      <created>1730927547139</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1730927547139</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -248,6 +262,22 @@
     <MESSAGE value="fixed init-db.sh problems" />
     <MESSAGE value="Hibernate init" />
     <MESSAGE value="Logger" />
-    <option name="LAST_COMMIT_MESSAGE" value="Logger" />
+    <MESSAGE value="Ordner" />
+    <option name="LAST_COMMIT_MESSAGE" value="Ordner" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="java-method">
+          <url>file://$PROJECT_DIR$/src/main/java/org/example/Test.java</url>
+          <line>3</line>
+          <properties class="org.example.Test" method="removeDuplicates">
+            <option name="EMULATED" value="true" />
+            <option name="WATCH_EXIT" value="false" />
+          </properties>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>

@@ -10,6 +10,7 @@ import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Map;
 
 public class JDBCConnection {
     Logger logger = new Logger();
@@ -18,9 +19,12 @@ public class JDBCConnection {
     private static final String password = "password";
 
     public static void main(String[] args) throws SQLException {
+        MetaDataExporter metaDataExporter = new MetaDataExporter();
+        String version = metaDataExporter.getNextVersion();
         // Json Exporter
         JSONExporter jsonExporter = new JSONExporter(url, user, password);
-        jsonExporter.exportDataToJSON();
+        Map<String, String> dataFiles = jsonExporter.exportDataToJSON(version); // Modify exportDataToJSON to return a map of file names
+
         JDBCConnection manager = new JDBCConnection();
 
         // Schema Exporter
@@ -35,10 +39,14 @@ public class JDBCConnection {
             System.out.println("Schema generated successfully");
             manager.createSqlDir();
             FileExporter fileExporter = new FileExporter();
-            fileExporter.exportToFile("./src/main/java/org/example/TestData/tableSchema/create_tables.sql", tableScript);
-            fileExporter.exportToFile("./src/main/java/org/example/TestData/Constraints/add_constraints.sql", constraintsScript);
+            String tableScriptFile = "./src/main/java/org/example/TestData/tableSchema/create_tables_"+ version +".sql";
+            String constraintsScriptFile = "./src/main/java/org/example/TestData/Constraints/add_constraints_"+ version+ ".sql";
+
+            fileExporter.exportToFile(tableScriptFile, tableScript);
+            fileExporter.exportToFile(constraintsScriptFile, constraintsScript);
 
             System.out.println("SQL Files created successfully");
+            metaDataExporter.exportMetaData(version, tableScriptFile, constraintsScriptFile, dataFiles);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
