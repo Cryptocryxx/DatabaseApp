@@ -14,9 +14,11 @@ public class ObjectExporter {
     FileWriter fileWriter = new FileWriter();
 
     private final Connection connection;
+    private final String filePath;
 
-    public ObjectExporter(Connection connection){
+    public ObjectExporter(Connection connection, String filePath){
         this.connection = connection;
+        this.filePath = filePath;
     }
 
     public void exportData() throws SQLException {
@@ -31,8 +33,8 @@ public class ObjectExporter {
                 String tableName = tables.getString("table_name");
                 List<Map<String, Object>> data = fetchDataFromTable(tableName);
 
-                String filePath = String.format("./src/main/java/org/example/TestData/%s.json", tableName);
-                fileWriter.writeJSONFile(filePath, data);
+                String newFilePath = String.format("%s/%s.json", filePath, tableName);
+                fileWriter.writeJSONFile(newFilePath, data);
             }
             logger.info("Data export to JSON completed successfully.");
         } catch (IOException e) {

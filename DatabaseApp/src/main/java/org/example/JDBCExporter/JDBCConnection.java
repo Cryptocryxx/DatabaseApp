@@ -9,6 +9,8 @@ import java.sql.SQLException;
 
 public class JDBCConnection {
     static Logger logger = new Logger();
+    static FileWriter fileWriter = new FileWriter();
+
 
     private static final String url = "jdbc:postgresql://localhost:5432/my_database";
     private static final String user = "user";
@@ -19,7 +21,9 @@ public class JDBCConnection {
             logger.info("JDBC Connection successfully");
 
             // Object Exporter
-            ObjectExporter objectExporter = new ObjectExporter(connection);
+            String filePath = "./src/main/java/org/example/TestData/Objects";
+            fileWriter.createDirectory(filePath);
+            ObjectExporter objectExporter = new ObjectExporter(connection, filePath);
             objectExporter.exportData();
 
             // Schema Exporter
@@ -29,7 +33,6 @@ public class JDBCConnection {
             String constraintsScript = schemaExporter.generateConstraintsScript();
             logger.info("Schema generated successfully");
 
-            FileWriter fileWriter = new FileWriter();
             fileWriter.createDirectory("./src/main/java/org/example/TestData/tableSchema");
             fileWriter.createDirectory("./src/main/java/org/example/TestData/Constraints");
             fileWriter.writeFile("./src/main/java/org/example/TestData/tableSchema/create_tables.sql", tableScript);

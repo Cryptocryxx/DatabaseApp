@@ -5,15 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="29117c9f-51e8-45bf-9a7d-97e8e2e91fa4" name="Changes" comment="Logger">
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/example/JDBCExporter/FileWriter.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/example/JDBCExporter/ObjectExporter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources.local.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.local.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/JDBCExporter/FileExporter.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/org/example/JDBCExporter/JDBCConnection.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/JDBCExporter/JDBCConnection.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/JDBCExporter/JSONExporter.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/JDBCExporter/SchemaExporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/JDBCExporter/SchemaExporter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/JDBCExporter/ObjectExporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/JDBCExporter/ObjectExporter.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -230,7 +224,7 @@
       <workItem from="1728565294351" duration="2320000" />
       <workItem from="1729074461272" duration="3419000" />
       <workItem from="1730278788754" duration="4906000" />
-      <workItem from="1731497584395" duration="2498000" />
+      <workItem from="1731497584395" duration="3239000" />
     </task>
     <task id="LOCAL-00001" summary="yml and docker activated">
       <option name="closed" value="true" />
