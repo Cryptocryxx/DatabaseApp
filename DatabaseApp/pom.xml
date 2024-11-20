@@ -47,25 +47,6 @@
       <version>4.7.6</version>
     </dependency>
 
-    <dependency>
-      <groupId>org.hibernate</groupId>
-      <artifactId>hibernate-core</artifactId>
-      <version>5.6.10.Final</version> <!-- Überprüfe die neueste Version -->
-    </dependency>
-
-    <!-- JDBC Driver für PostgreSQL -->
-    <dependency>
-      <groupId>org.postgresql</groupId>
-      <artifactId>postgresql</artifactId>
-      <version>42.5.0</version> <!-- Überprüfe die neueste Version -->
-    </dependency>
-
-    <!-- Optional: Hibernate Validator für Bean Validation -->
-    <dependency>
-      <groupId>org.hibernate.validator</groupId>
-      <artifactId>hibernate-validator</artifactId>
-      <version>6.2.0.Final</version> <!-- Überprüfe die neueste Version -->
-    </dependency>
 
     <!-- Optional: JBoss Logging für Hibernate Logging -->
     <dependency>
@@ -152,7 +133,7 @@
             <transformer
                     implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
               <manifestEntries>
-                <Main-Class>org.example.App</Main-Class>
+                <Main-Class>org.example.CommandLine.DataBack</Main-Class>
                 <Multi-Release>true</Multi-Release>
               </manifestEntries>
             </transformer>

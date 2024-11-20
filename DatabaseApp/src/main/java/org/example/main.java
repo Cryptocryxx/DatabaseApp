@@ -1,11 +1,11 @@
 package org.example;
-import picocli.CommandLine;
-
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.concurrent.Callable;
+
+import picocli.CommandLine;
 
 @CommandLine.Command(name = "dcopy", description = "Database copy tool")
 public class main implements Callable<Integer> {
@@ -20,7 +20,7 @@ public class main implements Callable<Integer> {
         //int exitCode = new CommandLine(new main()).execute(args);
         //System.exit(exitCode);
 
-
+        System.out.println("Hello");
 
     }
     private String username = "user";
