@@ -2,62 +2,52 @@ package org.example.JDBCExporter;
 
 import org.example.Logger.Logger;
 
-import javax.naming.spi.DirectoryManager;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Map;
 
 public class JDBCConnection {
-    Logger logger = new Logger();
+    static Logger logger = new Logger();
+    static FileWriter fileWriter = new FileWriter();
+
+
     private static final String url = "jdbc:postgresql://localhost:5432/my_database";
     private static final String user = "user";
     private static final String password = "password";
 
     public static void main(String[] args) throws SQLException {
-        // Json Exporter
-        JSONExporter jsonExporter = new JSONExporter(url, user, password);
-        jsonExporter.exportDataToJSON();
-        JDBCConnection manager = new JDBCConnection();
-
-        // Schema Exporter
         try(Connection connection = DriverManager.getConnection(url, user, password)) {
-            System.out.println("JDBC Connection successfully");
+            MetaDataExporter metaDataExporter = new MetaDataExporter();
+            String version = metaDataExporter.getNextVersion();
 
+            logger.info("JDBC Connection successfully");
+
+            // Object Exporter
+            String filePath = "./src/main/java/org/example/TestData/Objects";
+            fileWriter.createDirectory(filePath);
+            ObjectExporter objectExporter = new ObjectExporter(connection, filePath);
+            Map<String, String> dataFiles = objectExporter.exportData(version);
+
+            // Schema Exporter
             SchemaExporter schemaExporter = new SchemaExporter(connection);
 
             String tableScript = schemaExporter.generateTableScript();
             String constraintsScript = schemaExporter.generateConstraintsScript();
+            logger.info("Schema generated successfully");
 
-            System.out.println("Schema generated successfully");
-            manager.createSqlDir();
-            FileExporter fileExporter = new FileExporter();
-            fileExporter.exportToFile("./src/main/java/org/example/TestData/tableSchema/create_tables.sql", tableScript);
-            fileExporter.exportToFile("./src/main/java/org/example/TestData/Constraints/add_constraints.sql", constraintsScript);
+            String tableScriptPath = "./src/main/java/org/example/TestData/tableSchema/create_tables_"+version+".sql";
+            String constraintsPath = "./src/main/java/org/example/TestData/Constraints/add_constraints_"+version+".sql";
 
-            System.out.println("SQL Files created successfully");
+            fileWriter.createDirectory("./src/main/java/org/example/TestData/tableSchema");
+            fileWriter.createDirectory("./src/main/java/org/example/TestData/Constraints");
+            fileWriter.writeFile(tableScriptPath, tableScript);
+            fileWriter.writeFile(constraintsPath, constraintsScript);
+            metaDataExporter.exportMetaData(version, tableScriptPath, constraintsPath, dataFiles);
+            logger.info("SQL Files created successfully");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    public void createSqlDir(){
-        String pathTableSchema = "./src/main/java/org/example/TestData/tableSchema";
-        String pathTableConstraints = "./src/main/java/org/example/TestData/Constraints";
-
-        Path path1 = Paths.get(pathTableSchema);
-        Path path2 = Paths.get(pathTableConstraints);
-
-        try{
-            Files.createDirectories(path1);
-            Files.createDirectories(path2);
-            logger.info("Directory created successfully");
-        } catch (IOException e) {
-            logger.error("Fehler beim Erstellen der Ordner: "+ e.getMessage());
-        }
-
     }
 }

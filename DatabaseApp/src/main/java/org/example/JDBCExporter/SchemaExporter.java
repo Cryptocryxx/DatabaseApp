@@ -1,5 +1,7 @@
 package org.example.JDBCExporter;
 
+import org.example.Logger.Logger;
+
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -10,6 +12,8 @@ import java.util.List;
 import static org.example.JDBCExporter.DataTypeMapper.mapDataType;
 
 public class SchemaExporter {
+    Logger logger = new Logger();
+
     private final Connection connection;
     private final StringBuilder tableScript;
     private final StringBuilder constraintsScript;
@@ -21,35 +25,41 @@ public class SchemaExporter {
     }
 
     public String generateTableScript() throws SQLException {
+        logger.info("Start generating table scripts...");
         List<String> tableNames = getTableNames();
 
         for(String tableName : tableNames){
+            logger.info(String.format("Generating CREATE TABLE script for table: %s", tableName));
             tableScript.append(String.format("CREATE TABLE %s (\n", tableName));
             List<String> columnDefinitions = getColumnDefinitions(tableName);
 
             tableScript.append(String.join(",\n", columnDefinitions)).append("\n);\n\n");
         }
+        logger.info("Table script generation completed successfully.");
         return tableScript.toString();
     }
 
     public String generateConstraintsScript() throws SQLException {
+        logger.info("Start generating constraints scripts...");
         List<String> tableNames = getTableNames();
 
         for(String tableName: tableNames) {
+            logger.info(String.format("Generating constraints for table: %s", tableName));
             getPrimaryKeys(tableName);
             getForeignKeys(tableName);
             getUniqueConstraints(tableName);
             getCheckConstraints(tableName);
         }
-
+        logger.info("Constraints script generation completed successfully.");
         return constraintsScript.toString();
     }
 
     private List<String> getTableNames() throws SQLException {
-        String query = """
+        logger.info("Fetching table names from the database...");
+        String query = String.format("""
             SELECT table_name
             FROM information_schema.tables
-            WHERE table_schema = 'public'""";
+            WHERE table_schema = 'public'""");
 
         List<String> tableNames = new ArrayList<>();
 
@@ -58,11 +68,12 @@ public class SchemaExporter {
                 tableNames.add(tables.getString("table_name"));
             }
         }
-
+        logger.info("Successfully fetched table names.");
         return tableNames;
     }
 
     private List<String> getColumnDefinitions(String tableName) throws SQLException {
+        logger.info(String.format("Fetching column definitions for table: %s", tableName));
         String query = String.format("""
             SELECT column_name, data_type, is_nullable, column_default
             FROM information_schema.columns
@@ -82,6 +93,7 @@ public class SchemaExporter {
                     constraintsScript.append(String.format("ALTER TABLE %s ALTER COLUMN %S SET NOT NULL;\n", tableName, columnName));
                 }
             }
+            logger.info(String.format("Successfully fetched column definitions for table: %s", tableName));
         }
         
         return columnDefinitions;
@@ -94,6 +106,7 @@ public class SchemaExporter {
             JOIN information_schema.table_constraints tc ON kcu.constraint_name = tc.constraint_name
             WHERE kcu.table_name = '%s' AND tc.constraint_type = 'PRIMARY KEY'""", tableName);
 
+        logger.info(String.format("Fetching primary keys for table: %s", tableName));
         try (Statement statement = connection.createStatement(); ResultSet primaryKeys = statement.executeQuery(query)) {
             if (primaryKeys.next()) {
                 constraintsScript.append(String.format("ALTER TABLE %s ADD PRIMARY KEY (%s);\n", tableName, primaryKeys.getString("column_name")));
@@ -109,6 +122,7 @@ public class SchemaExporter {
             JOIN information_schema.constraint_column_usage ccu ON ccu.constraint_name = tc.constraint_name 
             WHERE kcu.table_name = '%s' AND tc.constraint_type = 'FOREIGN KEY'""", tableName);
 
+        logger.info(String.format("Fetching foreign keys for table: %s", tableName));
         try (Statement statement = connection.createStatement(); ResultSet foreignKeys = statement.executeQuery(query)) {
             while (foreignKeys.next()) {
                 constraintsScript.append(String.format("ALTER TABLE %s ADD CONSTRAINT %s FOREIGN KEY (%s) REFERENCES %s(%s);\n",
@@ -128,6 +142,7 @@ public class SchemaExporter {
             JOIN information_schema.key_column_usage kcu ON tc.constraint_name = kcu.constraint_name
             WHERE tc.table_name = '%s' AND tc.constraint_type = 'UNIQUE'""", tableName);
 
+        logger.info(String.format("Fetching unique constraints for table: %s", tableName));
         try (Statement statement = connection.createStatement(); ResultSet uniqueConstraints = statement.executeQuery(query)) {
             while (uniqueConstraints.next()) {
                 constraintsScript.append(String.format("ALTER TABLE %s ADD CONSTRAINT %s UNIQUE (%s);\n",
@@ -145,6 +160,7 @@ public class SchemaExporter {
             JOIN information_schema.constraint_table_usage ctu ON cc.constraint_name = ctu.constraint_name
             WHERE ctu.table_name = '%s'""", tableName);
 
+        logger.info(String.format("Fetching check constraints for table: %s", tableName));
         try (Statement statement = connection.createStatement(); ResultSet checkConstraints = statement.executeQuery(checkQuery)) {
             while (checkConstraints.next()) {
                 constraintsScript.append(String.format("ALTER TABLE %s ADD CONSTRAINT %s CHECK (%s);\n",

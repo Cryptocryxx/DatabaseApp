@@ -22,7 +22,9 @@ public class JSONExporter {
         this.password = password;
     }
 
-    public void exportDataToJSON() {
+    public Map<String, String> exportDataToJSON(String version) {
+        Map<String, String> dataFiles = new HashMap<>();
+
         try (Connection conn = DriverManager.getConnection(url, user, password)) {
             String tableQuery = "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'";
             Statement stmt = conn.createStatement();
@@ -31,10 +33,10 @@ public class JSONExporter {
             while (tables.next()) {
                 String tableName = tables.getString("table_name");
 
-                // Neues Statement für den Datenabruf erstellen
                 try (Statement dataStmt = conn.createStatement()) {
                     List<Map<String, Object>> data = fetchDataFromTable(dataStmt, tableName);
-                    writeDataToJSON(tableName, data);
+                    String filePath = writeDataToJSON(tableName, data, version);
+                    dataFiles.put(tableName, filePath);
                 }
             }
             tables.close();
@@ -42,7 +44,9 @@ public class JSONExporter {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        return dataFiles;
     }
+
 
     private List<Map<String, Object>> fetchDataFromTable(Statement stmt, String tableName) throws SQLException {
         List<Map<String, Object>> data = new ArrayList<>();
@@ -63,15 +67,18 @@ public class JSONExporter {
         return data;
     }
 
-    private void writeDataToJSON(String tableName, List<Map<String, Object>> data) {
+    private String writeDataToJSON(String tableName, List<Map<String, Object>> data, String version) {
         ObjectMapper objectMapper = new ObjectMapper();
+        String filePath = "./src/main/java/org/example/TestData/" + tableName + "_" + version + ".json";
+
         try {
-            File jsonFile = new File("./src/main/java/org/example/TestData/" + tableName + ".json");
+            File jsonFile = new File(filePath);
             objectMapper.writeValue(jsonFile, data);
-            System.out.println("Daten für Tabelle " + tableName + " erfolgreich in " + jsonFile.getName() + " exportiert.");
+            System.out.println("Data for table " + tableName + " successfully exported to " + jsonFile.getName());
         } catch (IOException e) {
             e.printStackTrace();
         }
+        return filePath;
     }
 
 
