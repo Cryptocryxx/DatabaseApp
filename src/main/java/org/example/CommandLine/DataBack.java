@@ -5,14 +5,14 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
-@Command(name = "Calculator", description = "Performs basic arithmetic operations on two numbers.")
+@Command(name = "DataBack", description = "Does Backups and stuff")
 public class DataBack implements Runnable {
 
-    @Parameters(index = "0", description = "The first number.")
-    private double a;
+    //@Parameters(index = "0", description = "")
+    //private double a;
 
-    @Parameters(index = "1", description = "The second number.")
-    private double b;
+    //@Parameters(index = "1", description = "The second number.")
+    //private double b;
 
     @Option(names = {"-op", "--operation"}, description = "The operation to perform: +, -, *, or /", required = true)
     private String operation;
@@ -20,6 +20,8 @@ public class DataBack implements Runnable {
     @Override
     public void run() {
         double result;
+        double a = 0;
+        double b = 0;
         switch (operation) {
             case "+":
                 result = a + b;
