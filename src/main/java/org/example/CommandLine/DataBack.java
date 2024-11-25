@@ -3,53 +3,62 @@ package org.example.CommandLine;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
-import picocli.CommandLine.Parameters;
 
-@Command(name = "DataBack", description = "Does Backups and stuff")
-public class DataBack implements Runnable {
+import java.util.concurrent.Callable;
 
-    //@Parameters(index = "0", description = "")
-    //private double a;
+@Command(name = "databack", mixinStandardHelpOptions = true, version = "DataBack 1.0",
+        description = "Backup and restore PostgreSQL databases with ease.")
+public class DataBack implements Callable<Integer> {
 
-    //@Parameters(index = "1", description = "The second number.")
-    //private double b;
-
-    @Option(names = {"-op", "--operation"}, description = "The operation to perform: +, -, *, or /", required = true)
-    private String operation;
+    public static void main(String[] args) {
+        int exitCode = new CommandLine(new DataBack())
+                .addSubcommand(new BackupCommand())
+                .addSubcommand(new RestoreCommand())
+                .execute(args);
+        System.exit(exitCode);
+    }
 
     @Override
-    public void run() {
-        double result;
-        double a = 0;
-        double b = 0;
-        switch (operation) {
-            case "+":
-                result = a + b;
-                System.out.printf("Result: %.2f + %.2f = %.2f%n", a, b, result);
-                break;
-            case "-":
-                result = a - b;
-                System.out.printf("Result: %.2f - %.2f = %.2f%n", a, b, result);
-                break;
-            case "*":
-                result = a * b;
-                System.out.printf("Result: %.2f * %.2f = %.2f%n", a, b, result);
-                break;
-            case "/":
-                if (b != 0) {
-                    result = a / b;
-                    System.out.printf("Result: %.2f / %.2f = %.2f%n", a, b, result);
-                } else {
-                    System.out.println("Error: Division by zero is not allowed.");
-                }
-                break;
-            default:
-                System.out.println("Invalid operation. Please use +, -, *, or /.");
+    public Integer call() {
+        CommandLine.usage(this, System.out);
+        return 0;
+    }
+
+    @Command(name = "backup", mixinStandardHelpOptions = true,
+            description = "Create a backup of a PostgreSQL database.")
+    static class BackupCommand implements Callable<Integer> {
+
+        @Option(names = {"--db-name"}, required = true, description = "Name of the database to back up.")
+        private String dbName;
+
+        @Option(names = {"--output"}, required = true, description = "File path where the backup will be stored.")
+        private String outputPath;
+
+        @Option(names = {"--incremental"}, description = "Perform an incremental backup to save only the changes.")
+        private boolean incremental;
+
+        @Override
+        public Integer call() {
+            System.out.printf("Backing up database '%s' to '%s'%s%n",
+                    dbName, outputPath, incremental ? " (incremental)" : "");
+            return 0;
         }
     }
 
-    public static void main(String[] args) {
-        int exitCode = new CommandLine(new DataBack()).execute(args);
-        System.exit(exitCode);
+    @Command(name = "restore", mixinStandardHelpOptions = true,
+            description = "Restore a PostgreSQL database from a backup file.")
+    static class RestoreCommand implements Callable<Integer> {
+
+        @Option(names = {"--db-name"}, required = true, description = "Name of the database to restore.")
+        private String dbName;
+
+        @Option(names = {"--input"}, required = true, description = "Path to the backup file.")
+        private String inputPath;
+
+        @Override
+        public Integer call() {
+            System.out.printf("Restoring database '%s' from '%s'%n", dbName, inputPath);
+            return 0;
+        }
     }
 }
