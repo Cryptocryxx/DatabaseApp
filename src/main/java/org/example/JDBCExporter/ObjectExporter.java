@@ -33,8 +33,8 @@ public class ObjectExporter {
             while (tables.next()) {
                 String tableName = tables.getString("table_name");
                 List<Map<String, Object>> data = fetchDataFromTable(tableName);
-
-                String newFilePath = String.format("%s/%s_%s.json", filePath, tableName, version);
+                fileWriter.createDirectory(filePath + "/" + tableName);
+                String newFilePath = String.format("%s/%s_%s.json", filePath + "/" + tableName, tableName, version);
                 fileWriter.writeJSONFile(newFilePath, data);
                 dataFiles.put(tableName, newFilePath);
             }
