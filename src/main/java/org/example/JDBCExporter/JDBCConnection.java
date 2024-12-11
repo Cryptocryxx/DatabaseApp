@@ -13,15 +13,18 @@ public class JDBCConnection {
     static FileWriter fileWriter = new FileWriter();
 
 
-    private static final String url = "jdbc:postgresql://localhost:5432/my_database";
-    private static final String user = "user";
-    private static final String password = "password";
+    public static final String url = "jdbc:postgresql://localhost:5432/my_database";
+    public static final String user = "user";
+    public static final String password = "password";
 
     public static void main(String[] args) throws SQLException {
         try(Connection connection = DriverManager.getConnection(url, user, password)) {
             MetaDataExporter metaDataExporter = new MetaDataExporter();
             String version = metaDataExporter.getNextVersion();
-
+            int versionNumber = Integer.parseInt(version.substring(1));
+            if(versionNumber > 1){
+                throw new Exception();
+            }
             logger.info("JDBC Connection successfully");
 
             // Object Exporter
@@ -48,6 +51,8 @@ public class JDBCConnection {
             logger.info("SQL Files created successfully");
         } catch (IOException e) {
             throw new RuntimeException(e);
+        } catch (Exception e) {
+            throw new RuntimeException("You already made an initial backup. If you want to make a new one, please delete the old version.");
         }
     }
 }

@@ -45,7 +45,7 @@ public class ObjectExporter {
         return dataFiles;
     }
 
-    private List<Map<String, Object>> fetchDataFromTable(String tableName) throws SQLException {
+    public List<Map<String, Object>> fetchDataFromTable(String tableName) throws SQLException {
         logger.info(String.format("Fetching data from table: %s", tableName));
         String query = String.format("SELECT * FROM \"%s\"", tableName);
 
