@@ -1,5 +1,6 @@
 package org.example.JDBCExporter;
 
+import org.example.JDBCExporter.IncrementalExporter.IncrementalMain;
 import org.example.Logger.Logger;
 
 import java.io.IOException;
@@ -21,10 +22,7 @@ public class JDBCConnection {
         try(Connection connection = DriverManager.getConnection(url, user, password)) {
             MetaDataExporter metaDataExporter = new MetaDataExporter();
             String version = metaDataExporter.getNextVersion();
-            int versionNumber = Integer.parseInt(version.substring(1));
-            if(versionNumber > 1){
-                throw new Exception();
-            }
+
             logger.info("JDBC Connection successfully");
 
             // Object Exporter
@@ -49,6 +47,18 @@ public class JDBCConnection {
             fileWriter.writeFile(constraintsPath, constraintsScript);
             metaDataExporter.exportMetaData(version, tableScriptPath, constraintsPath, dataFiles);
             logger.info("SQL Files created successfully");
+            int newVersionNum = Integer.parseInt(version.substring(1));
+            int oldVersionNum = newVersionNum-1;
+            logger.info("Old Version Number: "+ oldVersionNum);
+            logger.info("New Version Number: " + newVersionNum);
+            if(newVersionNum > 1){
+                IncrementalMain incrementalMain = new IncrementalMain();
+                String oldVersion = "v"+oldVersionNum;
+                String newVersion = "v"+newVersionNum;
+                logger.debug("Old and New Version: " + oldVersion + " "+ newVersion);
+                String metaFilePath = "./src/main/java/org/example/TestData/metadata.json";
+                incrementalMain.processTables(metaFilePath, oldVersion, newVersion);
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         } catch (Exception e) {
