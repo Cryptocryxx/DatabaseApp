@@ -63,4 +63,22 @@ public class FileWriter {
         }
 
     }
+
+    public List<Map<String, Object>> readJSONFile(String path) {
+        try {
+            File jsonFile = new File(path);
+            if (!jsonFile.exists()) {
+                logger.warn("JSON-Datei nicht gefunden: " + path);
+                return List.of();
+            }
+
+            ObjectMapper objectMapper = new ObjectMapper();
+            List<Map<String, Object>> data = objectMapper.readValue(jsonFile, List.class);
+            logger.info("JSON-Datei erfolgreich gelesen: " + path);
+            return data;
+        } catch (IOException e) {
+            logger.error("Fehler beim Lesen der JSON-Datei: " + path + " - " + e.getMessage());
+            return List.of();
+        }
+    }
 }
