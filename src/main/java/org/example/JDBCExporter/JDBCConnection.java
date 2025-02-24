@@ -14,11 +14,9 @@ public class JDBCConnection {
     static FileWriter fileWriter = new FileWriter();
 
 
-    public static final String url = "jdbc:postgresql://localhost:5432/my_database";
-    public static final String user = "user";
-    public static final String password = "password";
 
-    public static void main(String[] args) throws SQLException {
+
+    public void doBackup(String url, String user, String password){
         try(Connection connection = DriverManager.getConnection(url, user, password)) {
             MetaDataExporter metaDataExporter = new MetaDataExporter();
             String version = metaDataExporter.getNextVersion();
@@ -64,5 +62,20 @@ public class JDBCConnection {
         } catch (Exception e) {
             throw new RuntimeException("You already made an initial backup. If you want to make a new one, please delete the old version.");
         }
+    }
+    public void restoreBackup(String url, String user, String password) {
+        try (Connection connection = DriverManager.getConnection(url, user, password)){
+
+        }catch (Exception e) {
+
+        }
+    }
+
+
+    public static void main(String[] args) throws SQLException {
+        String url = "jdbc:postgresql://localhost:5432/my_database";
+        String user = "user";
+        String password = "password";
+
     }
 }
