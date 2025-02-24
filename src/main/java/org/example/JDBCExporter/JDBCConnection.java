@@ -13,9 +13,6 @@ public class JDBCConnection {
     static Logger logger = new Logger();
     static FileWriter fileWriter = new FileWriter();
 
-
-
-
     public void doBackup(String url, String user, String password){
         try(Connection connection = DriverManager.getConnection(url, user, password)) {
             MetaDataExporter metaDataExporter = new MetaDataExporter();
@@ -76,6 +73,7 @@ public class JDBCConnection {
         String url = "jdbc:postgresql://localhost:5432/my_database";
         String user = "user";
         String password = "password";
-
+        JDBCConnection jdbcConnection = new JDBCConnection();
+        jdbcConnection.doBackup(url, user, password);
     }
 }

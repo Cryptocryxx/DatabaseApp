@@ -8,8 +8,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class FileWriter {
     Logger logger = new Logger();
@@ -26,8 +25,27 @@ public class FileWriter {
 
     public void writeJSONFile(String filePath, List<Map<String, Object>> data) throws IOException {
         try {
+            List<Map<String, Object>> indexedData = new ArrayList<>();
+
+            for(Map<String, Object> entry : data){
+                Map<String, Object> indexedEntry = new HashMap<>();
+                indexedEntry.put("index", UUID.randomUUID().toString());
+                indexedEntry.put("object", entry);
+
+                indexedData.add(indexedEntry);
+            }
             File jsonFile = new File(filePath);
-            objectMapper.writeValue(jsonFile, data);
+            objectMapper.writeValue(jsonFile, indexedData);
+            logger.info(String.format("Data exported to JSON successfully: %s", jsonFile.getName()));
+        } catch (IOException e) {
+            logger.error(String.format("Error writing JSON file: %s: %s", filePath, e.getMessage()));
+        }
+    }
+
+    public void writeJSONFile(String filePath, Map<String, Object> data) throws IOException {
+        try {
+            File jsonFile = new File(filePath);
+            objectMapper.writerWithDefaultPrettyPrinter().writeValue(jsonFile, data);
             logger.info(String.format("Data exported to JSON successfully: %s", jsonFile.getName()));
         } catch (IOException e) {
             logger.error(String.format("Error writing JSON file: %s: %s", filePath, e.getMessage()));
