@@ -2,12 +2,10 @@ package org.example.JDBCExporter;
 
 import org.example.Logger.Logger;
 
+import java.io.File;
 import java.io.IOException;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ObjectExporter {
     Logger logger = new Logger();
@@ -65,5 +63,55 @@ public class ObjectExporter {
             logger.info(String.format("Data fetched successfully from table: %s", tableName));
         }
         return data;
+    }
+
+    public void importData(String version) {
+        logger.info("Beginne den Import von JSON-Daten in die Datenbank...");
+        File folder = new File(filePath);
+        File[] tableFolders = folder.listFiles(File::isDirectory);
+
+        if (tableFolders == null) {
+            logger.error("Keine Daten zum Importieren gefunden.");
+            return;
+        }
+
+        for (File tableFolder : tableFolders) {
+            String tableName = tableFolder.getName();
+            File jsonFile = new File(tableFolder, tableName + "_" + version + ".json");
+
+            if (!jsonFile.exists()) {
+                logger.warn("Keine Datei für Tabelle " + tableName + " gefunden.");
+                continue;
+            }
+
+            try {
+                List<Map<String, Object>> data = fileWriter.readJSONFile(jsonFile.getPath());
+                insertDataIntoTable(tableName, data);
+                logger.info("Daten für Tabelle " + tableName + " erfolgreich importiert.");
+            } catch (SQLException e) {
+                logger.error("Fehler beim Importieren von Daten für Tabelle " + tableName + ": " + e.getMessage());
+            }
+        }
+    }
+
+    private void insertDataIntoTable(String tableName, List<Map<String, Object>> data) throws SQLException {
+        if (data.isEmpty()) return;
+
+        StringBuilder queryBuilder = new StringBuilder("INSERT INTO \"").append(tableName).append("\" (");
+        Map<String, Object> firstRow = data.get(0);
+
+        List<String> columns = new ArrayList<>(firstRow.keySet());
+        queryBuilder.append(String.join(", ", columns)).append(") VALUES (");
+        queryBuilder.append(String.join(", ", Collections.nCopies(columns.size(), "?"))).append(")");
+
+        try (PreparedStatement stmt = connection.prepareStatement(queryBuilder.toString())) {
+            for (Map<String, Object> row : data) {
+                for (int i = 0; i < columns.size(); i++) {
+                    stmt.setObject(i + 1, row.get(columns.get(i)));
+                }
+                stmt.addBatch();
+            }
+            stmt.executeBatch();
+        }
     }
 }

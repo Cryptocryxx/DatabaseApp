@@ -12,7 +12,7 @@ address VARCHAR(255),
 phone_number VARCHAR(255)
 );
 
-CREATE TABLE Order (
+CREATE TABLE "Order" (
 id INT,
 order_date date,
 total_amount numeric,
