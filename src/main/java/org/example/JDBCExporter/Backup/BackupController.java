@@ -27,7 +27,7 @@ public class BackupController {
         this.logger = new Logger();
         this.fileWriter = new FileWriter();
         this.createBackupHelper = new CreateBackupHelper(connection, logger, fileWriter);
-        this.restoreBackupHelper = new RestoreBackupHelper(connection, logger, fileWriter);
+        this.restoreBackupHelper = new RestoreBackupHelper(connection, logger);
     }
 
     public void doBackup() throws SQLException, IOException {

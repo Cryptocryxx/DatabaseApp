@@ -1,6 +1,5 @@
 package org.example.JDBCExporter.Backup;
 
-import org.example.JDBCExporter.FileWriter;
 import org.example.JDBCExporter.MetaData;
 import org.example.JDBCExporter.ObjectExporter;
 import org.example.Logger.Logger;
@@ -9,7 +8,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -17,13 +15,10 @@ public class RestoreBackupHelper {
 
     private final Connection connection;
     private final Logger logger;
-    private final FileWriter fileWriter;
-    private final MetaData metaData = MetaData.getInstance();
 
-    public RestoreBackupHelper(Connection connection, Logger logger, FileWriter fileWriter) {
+    public RestoreBackupHelper(Connection connection, Logger logger ) {
         this.connection = connection;
         this.logger = logger;
-        this.fileWriter = fileWriter;
     }
 
     public void performRestore() throws SQLException {
