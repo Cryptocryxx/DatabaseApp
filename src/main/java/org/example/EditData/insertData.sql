@@ -1,6 +1,9 @@
 INSERT INTO Person (name, email, birth_date)
 VALUES ('Alice Cooper', 'alice.cooper@example.com', '1985-09-12');
 -- Fügt eine neue Person in die Tabelle `Person` ein.
+INSERT INTO Person (name, email, birth_date)
+VALUES ('Joel', 'joel@example.com', '1985-09-04');
+-- Fügt eine neue Person in die Tabelle `Person` ein.
 
 INSERT INTO PersonDetail (person_id, address, phone_number)
 VALUES (3, '789 Pine St, Villagetown', '555-666-7777');

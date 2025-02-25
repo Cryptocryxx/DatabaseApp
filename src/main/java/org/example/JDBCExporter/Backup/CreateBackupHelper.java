@@ -21,12 +21,13 @@ public class CreateBackupHelper {
     }
 
     public void performBackup() throws SQLException, IOException {
+
         metaDataController.updateMetaData(connection);
 
         exportObjects();
         exportSchema();
-
-        if(metaDataController.getCurrentVersion() > 1){
+        logger.info("Current version: " + metaDataController.getCurrentVersion());
+        if(metaDataController.getCurrentVersion() > 0){
             exportIncremental();
         }
 
@@ -54,6 +55,6 @@ public class CreateBackupHelper {
     // perform incremental Backup if a previous version exist
     private void exportIncremental() throws SQLException, IOException {
         IncrementalMain incrementalMain = new IncrementalMain();
-        incrementalMain.processTables(metaDataController.getMetaDataFilePath(), metaDataController.getLastVersionName(), metaDataController.getCurrentVersionName());
+        incrementalMain.processTables();
     }
 }

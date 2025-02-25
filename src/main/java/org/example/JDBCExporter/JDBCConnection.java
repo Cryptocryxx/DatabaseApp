@@ -55,7 +55,7 @@ public class JDBCConnection {
                 String newVersion = "v"+newVersionNum;
                 logger.debug("Old and New Version: " + oldVersion + " "+ newVersion);
                 String metaFilePath = "./src/main/java/org/example/TestData/metadata.json";
-                incrementalMain.processTables(metaFilePath, oldVersion, newVersion);
+                incrementalMain.processTables();
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -116,10 +116,10 @@ public class JDBCConnection {
 
 
     public static void main(String[] args) throws SQLException {
-        String url = "jdbc:postgresql://localhost:5432/databack";
-        String user = "benutzer";
-        String password = "passwort";
+        String url = "jdbc:postgresql://localhost:5432/my_database";
+        String user = "user";
+        String password = "password";
         JDBCConnection connection = new JDBCConnection();
-        connection.restoreBackup(url, user, password);
+        connection.doBackup(url, user, password);
     }
 }

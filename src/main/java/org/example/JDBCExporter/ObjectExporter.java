@@ -33,6 +33,7 @@ public class ObjectExporter {
                 String tableName = tables.getString("table_name");
                 List<Map<String, Object>> data = fetchDataFromTable(tableName);
                 String newFilePath = metaDataController.getObjectFilePath(tableName);
+
                 fileWriter.writeJSONFile(newFilePath, data);
                 dataFiles.put(tableName, newFilePath);
             }

@@ -52,6 +52,17 @@ public class FileWriter {
         }
     }
 
+    public void writeJSONFileWithoutIndex(String filePath, List<Map<String, Object>> data) throws IOException {
+        try {
+            File jsonFile = new File(filePath);
+            objectMapper.writeValue(jsonFile, data); // Speichere die Daten direkt, ohne sie zu verändern
+            logger.info(String.format("Data exported to JSON successfully: %s", jsonFile.getName()));
+        } catch (IOException e) {
+            logger.error(String.format("Error writing JSON file: %s: %s", filePath, e.getMessage()));
+            throw e; // Wirf die Exception weiter, um sie an der Aufrufstelle zu behandeln
+        }
+    }
+
     public void createDirectory(String filePath){
         Path path = Paths.get(filePath);
 

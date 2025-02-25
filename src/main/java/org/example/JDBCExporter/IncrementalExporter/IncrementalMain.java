@@ -1,7 +1,10 @@
 package org.example.JDBCExporter.IncrementalExporter;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.JDBCExporter.FileWriter;
+import org.example.JDBCExporter.MetaDataController;
 import org.example.JDBCExporter.ObjectExporter;
 import org.example.Logger.Logger;
 
@@ -19,105 +22,207 @@ public class IncrementalMain {
     static FileWriter fileWriter = new FileWriter();
     static ObjectMapper objectMapper = new ObjectMapper();
 
-    public Map<String, Object> compareData(List<Map<String, Object>> oldData, List<Map<String, Object>> newData) {
-        logger.info("OldData: " + oldData);
-        logger.info("NewData: " + newData);
+    /**
+     * Verarbeitet alle Tabellen und aktualisiert die Current-Datei basierend auf der Basisdatei und den inkrementellen Dateien.
+     */
+    public void processTables() throws IOException {
+        MetaDataController metaDataController = MetaDataController.getInstance();
 
+        try {
+            // Hole die Namen aller Tabellen aus den Metadaten
+            List<String> tableNames = metaDataController.getTableNamesFromMetadata();
+
+            for (String tableName : tableNames) {
+                logger.info("Processing table: "+ tableName);
+
+                // 1️⃣ Lade die Basisdatei
+                String basePath = metaDataController.getTableBasePath(tableName);
+                logger.info("Loading base file from: "+ basePath);
+                List<Map<String, Object>> currentData = loadDataFromFile(basePath);
+                logger.info("Base data loaded: "+ currentData);
+
+                // 2️⃣ Lade alle inkrementellen Dateien in der richtigen Reihenfolge
+                List<String> incrementalPaths = metaDataController.getIncrementalFiles(tableName);
+                logger.info("Incremental paths: "+ incrementalPaths);
+
+                for (String path : incrementalPaths) {
+                    File file = new File(path);
+                    logger.info("Processing incremental file: "+ path);
+
+                    if (file.exists()) {
+                        // Überprüfe, ob die Datei Änderungen oder vollständige Daten enthält
+                        if (isIncrementalChangesFile(file)) {
+                            logger.info("File contains incremental changes.");
+                            Map<String, Object> incrementalChanges = loadIncrementalChangesFromFile(path);
+                            applyIncrementalChanges(currentData, incrementalChanges);
+                        } else {
+                            logger.info("File contains full data.");
+                            // Wenn die Datei vollständige Daten enthält, ersetze die aktuellen Daten
+                            /*
+                            List<Map<String, Object>> fullData = loadDataFromFile(path);
+                            currentData = new ArrayList<>(fullData);
+
+                             */
+                        }
+                        logger.info("Current data after processing,"+ path +", Current data: "+ currentData);
+                    } else {
+                        logger.warn("File does not exist: , "+ path);
+                    }
+                }
+
+                // 3️⃣ Speichere den aktuellen Zustand in der Current-Datei
+                String currentPath = metaDataController.getTableCurrentPath(tableName);
+                logger.info("Saving current data to: "+ currentPath);
+                fileWriter.writeJSONFile(currentPath, currentData);
+                logger.info("Current data saved: "+ currentData);
+
+                // 4️⃣ Vergleiche die Current-Datei mit der neuesten inkrementellen Datei (falls vorhanden)
+                if (!incrementalPaths.isEmpty()) {
+                    String latestIncrementalPath = incrementalPaths.get(incrementalPaths.size() - 1);
+                    File latestIncrementalFile = new File(latestIncrementalPath);
+                    logger.info("Latest incremental file:"+ latestIncrementalPath);
+
+                    if (latestIncrementalFile.exists()) {
+                        if (isIncrementalChangesFile(latestIncrementalFile)) {
+                            logger.info("Latest file contains incremental changes.");
+                            // Wenn die neueste inkrementelle Datei Änderungen enthält
+                            Map<String, Object> incrementalChanges = loadIncrementalChangesFromFile(latestIncrementalPath);
+                            applyIncrementalChanges(currentData, incrementalChanges);
+                        } else {
+                            logger.info("Latest file contains full data.");
+                            // Wenn die neueste inkrementelle Datei vollständige Daten enthält
+                            List<Map<String, Object>> latestIncrementalData = loadDataFromFile(latestIncrementalPath);
+                            logger.info("Latest incremental data loaded: "+ latestIncrementalData);
+                            logger.info("Current data: "+currentData);
+                            Map<String, Object> changes = compareData(currentData, latestIncrementalData);
+                            applyIncrementalChanges(currentData, changes);
+                            // Überschreibe die neueste inkrementelle Datei mit den Änderungen
+                            fileWriter.writeJSONFile(latestIncrementalPath, changes);
+                            logger.info("Incremental changes saved to: "+ latestIncrementalPath);
+
+                            // Aktualisiere die Current-Datei mit dem neuesten Zustand
+                            logger.info("Latest Incremental data saved: "+ latestIncrementalData);
+                            fileWriter.writeJSONFileWithoutIndex(currentPath, currentData);
+                            logger.info("Current data updated with latest incremental data.");
+                        }
+                    } else {
+                        logger.warn("Latest incremental file does not exist: "+ latestIncrementalPath);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            logger.error("Error processing tables: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Überprüft, ob eine Datei inkrementelle Änderungen enthält.
+     */
+    private boolean isIncrementalChangesFile(File file) throws IOException {
+        if (!file.exists()) {
+            return false; // Datei existiert nicht
+        }
+
+        try {
+            // Lese die gesamte Datei als JSON-Knoten ein
+            JsonNode rootNode = objectMapper.readTree(file);
+
+            // Überprüfe, ob es sich um ein Objekt (Map) mit den Schlüsseln "added" und "deleted" handelt
+            if (rootNode.isObject()) {
+                return rootNode.has("added") && rootNode.has("deleted");
+            }
+
+            // Wenn es sich um ein Array handelt, ist es keine inkrementelle Änderungsdatei
+            return false;
+        } catch (IOException e) {
+            logger.error("Error reading file: " + file.getPath() + ", " + e.getMessage());
+            return false; // Bei einem Fehler wird angenommen, dass es sich nicht um eine inkrementelle Änderungsdatei handelt
+        }
+    }
+
+    /**
+     * Lädt Daten aus einer JSON-Datei.
+     */
+    private List<Map<String, Object>> loadDataFromFile(String filePath) throws IOException {
+        File file = new File(filePath);
+        if (file.exists()) {
+            // Verwende TypeReference, um den Typ der Map explizit anzugeben
+            return objectMapper.readValue(file, new TypeReference<List<Map<String, Object>>>() {});
+        } else {
+            return new ArrayList<>();
+        }
+    }
+    /**
+     * Lädt inkrementelle Änderungen aus einer JSON-Datei.
+     */
+    private Map<String, Object> loadIncrementalChangesFromFile(String filePath) throws IOException {
+        File file = new File(filePath);
+        if (file.exists()) {
+            return objectMapper.readValue(file, Map.class);
+        } else {
+            return new HashMap<>();
+        }
+    }
+
+
+    private void applyIncrementalChanges(List<Map<String, Object>> currentData, Map<String, Object> changes) {
+        // Lösche gelöschte Einträge
+        List<String> deletedIndices = (List<String>) changes.getOrDefault("deleted", new ArrayList<>());
+        currentData.removeIf(entry -> deletedIndices.contains(entry.get("index")));
+
+        // Füge neue Einträge hinzu
+        List<Map<String, Object>> addedEntries = (List<Map<String, Object>>) changes.getOrDefault("added", new ArrayList<>());
+        for (Map<String, Object> addedEntry : addedEntries) {
+            // Überprüfe, ob der Eintrag bereits in currentData existiert
+            boolean exists = currentData.stream()
+                    .anyMatch(entry -> Objects.equals(entry.get("object"), addedEntry.get("object")));
+
+            if (!exists) {
+                // Wenn der Eintrag neu ist, füge ihn mit einem neuen Index hinzu
+                Map<String, Object> newEntry = new HashMap<>();
+                newEntry.put("index", addedEntry.get("index")); // Neuer Index
+                newEntry.put("object", addedEntry.get("object"));
+                currentData.add(newEntry);
+            }
+        }
+    }
+    /**
+     * Vergleicht alte und neue Daten und gibt die Unterschiede zurück.
+     */
+    public Map<String, Object> compareData(List<Map<String, Object>> oldData, List<Map<String, Object>> newData) {
         List<Map<String, Object>> added = new ArrayList<>();
         List<String> deleted = new ArrayList<>();
 
-        // 1️⃣ Erstelle eine Map von alten Daten, wobei der Index als Schlüssel dient
+        // Erstelle eine Map von alten Daten, wobei der Index als Schlüssel dient
         Map<String, Map<String, Object>> oldDataMap = new HashMap<>();
         for (Map<String, Object> oldRow : oldData) {
             oldDataMap.put((String) oldRow.get("index"), oldRow);
         }
 
-        // 2️⃣ Neue Einträge hinzufügen, falls sie nicht existieren
+        // Neue Einträge hinzufügen, falls sie nicht existieren
         for (Map<String, Object> newRow : newData) {
-            boolean exists = false;
+            boolean exists = oldData.stream()
+                    .anyMatch(oldRow -> Objects.equals(oldRow.get("object"), newRow.get("object")));
 
-            // Vergleiche nur das "object" und nicht das gesamte Map
-            for (Map<String, Object> oldRow : oldData) {
-                if (Objects.equals(oldRow.get("object"), newRow.get("object"))) {
-                    exists = true;
-                    break;
-                }
-            }
-
-            // Wenn das Objekt nicht gefunden wurde, wird es als neues Element betrachtet
             if (!exists) {
-                Map<String, Object> newObject = new HashMap<>();
-                newObject.put("index", UUID.randomUUID().toString()); // Generiere einen neuen Index
-                newObject.put("object", newRow.get("object")); // Füge das Objekt hinzu
-                added.add(newObject);
+                added.add(newRow);
             }
         }
 
-        // 3️⃣ Gelöschte Einträge finden (falls sie nicht mehr in newData existieren)
+        // Gelöschte Einträge finden
         for (Map<String, Object> oldRow : oldData) {
-            boolean exists = false;
+            boolean exists = newData.stream()
+                    .anyMatch(newRow -> Objects.equals(oldRow.get("object"), newRow.get("object")));
 
-            // Wenn das Objekt aus oldData in newData existiert, überspringe es
-            for (Map<String, Object> newRow : newData) {
-                if (Objects.equals(oldRow.get("object"), newRow.get("object"))) {
-                    exists = true;
-                    break;
-                }
-            }
-
-            // Falls das alte Objekt nicht mehr existiert, speichern wir nur den Index
             if (!exists) {
                 deleted.add((String) oldRow.get("index"));
             }
         }
 
-        // 4️⃣ Rückgabe der Änderungen (nur added und deleted, ohne "index" oder "object")
+        // Rückgabe der Änderungen
         Map<String, Object> changes = new HashMap<>();
         changes.put("added", added);
         changes.put("deleted", deleted);
-
-        logger.info("Changes without index/object: " + changes);  // Ausgabe zum Debuggen
-
         return changes;
     }
-
-    public void processTables(String metaFilePath, String oldVersion, String newVersion) throws IOException {
-
-        //Loading metadata
-        Map<String, Object> metaData = objectMapper.readValue(new File(metaFilePath), Map.class);
-        Map<String, String> dataFiles = (Map<String, String>) metaData.get("data_files");
-
-        try {
-            //Connection connection = DriverManager.getConnection(url, user, password);
-            //ObjectExporter objectExporter = new ObjectExporter(connection, "./src/main/java/org/example/TestData/Objects");
-
-            for (Map.Entry<String, String> entry : dataFiles.entrySet()) {
-                String tableName = entry.getKey();
-                String newFilePath = entry.getValue();
-                String oldFilePath = newFilePath.replace(newVersion, oldVersion);
-
-                List<Map<String, Object>> oldData = Arrays.asList(objectMapper.readValue(new File(oldFilePath), Map[].class));
-                List<Map<String, Object>> newData = Arrays.asList(objectMapper.readValue(new File(newFilePath), Map[].class));
-                //fileWriter.writeJSONFile(newFilePath, newData);
-
-                String incrementalFilePath = newFilePath.replace(newVersion, "incremental_" + newVersion);
-
-                Map<String, Object> changes = compareData(oldData, newData);
-
-                // Verpacken Sie die Map in eine Liste, um sie an writeJSONFile zu übergeben
-                fileWriter.writeJSONFile(incrementalFilePath, changes);
-                logger.info(String.format("Incremental changes for table '%s' saved to %s", tableName, incrementalFilePath));
-
-                if (new File(newFilePath).delete()) {
-                    logger.info(String.format("File '%s' deleted successfully after processing.", newFilePath));
-                } else {
-                    logger.warn(String.format("File '%s' could not be deleted.", newFilePath));
-                }
-            }
-
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-        }
-    }
-
 }

@@ -185,25 +185,45 @@ public class MetaDataController {
 
     public String getCurrentVersionName() {
         Map<String, Object> constraints = (Map<String, Object>) metadata.get("constraints");
-        String constraintsPath = (String) constraints.get("path");
         List<String> versions = (List<String>) constraints.get("versions");
 
-        return "v" + String.valueOf(versions.size() - 1);
+        if (versions.isEmpty()) {
+            return ""; // Keine Versionen vorhanden
+        }
+
+        // Hole den Dateinamen der letzten Version
+        String lastVersionFile = versions.get(versions.size() - 1);
+
+        // Extrahiere die Versionsnummer aus dem Dateinamen
+        int vIndex = lastVersionFile.indexOf("v");
+        int dotIndex = lastVersionFile.indexOf(".", vIndex);
+
+        if (vIndex != -1 && dotIndex != -1) {
+            return lastVersionFile.substring(vIndex, dotIndex);
+        } else {
+            return ""; // Falls die Versionsnummer nicht extrahiert werden kann
+        }
     }
 
     public String getLastVersionName() {
         Map<String, Object> constraints = (Map<String, Object>) metadata.get("constraints");
         List<String> versions = (List<String>) constraints.get("versions");
-        if (versions.isEmpty()) {
-            return "";
+
+        if (versions.size() < 2) {
+            return ""; // Es gibt keine vorherige Version
         }
-        String lastVersionFile = versions.get(versions.size() - 1);
+
+        // Hole den Dateinamen der vorherigen Version
+        String lastVersionFile = versions.get(versions.size() - 2);
+
+        // Extrahiere die Versionsnummer aus dem Dateinamen
         int vIndex = lastVersionFile.indexOf("v");
         int dotIndex = lastVersionFile.indexOf(".", vIndex);
+
         if (vIndex != -1 && dotIndex != -1) {
             return lastVersionFile.substring(vIndex, dotIndex);
         } else {
-            return "";
+            return ""; // Falls die Versionsnummer nicht extrahiert werden kann
         }
     }
 
@@ -257,6 +277,7 @@ public class MetaDataController {
         return BASE_PATH + TABLE_SCHEMA_PATH + "/" + fileName;
     }
 
+    //File path for a tablename
     public String getObjectFilePath(String tableName) {
         Map<String, Object> objects = (Map<String, Object>) metadata.get("objects");
 
@@ -280,4 +301,74 @@ public class MetaDataController {
 
         return BASE_PATH + OBJECTS_PATH + "/" + tableName + "/" + fileName;
     }
+
+    public String getTableBasePath(String tableName) {
+        Map<String, Object> objects = (Map<String, Object>) metadata.get("objects");
+
+        if (objects == null || !objects.containsKey(tableName)) {
+            throw new IllegalArgumentException("Table " + tableName + " not found in metadata");
+        }
+
+        Map<String, Object> tableEntry = (Map<String, Object>) objects.get(tableName);
+
+        String baseName = (String) tableEntry.get("basis");
+        if (baseName == null) {
+            logger.error("No base file found for table " + tableName);
+            return null;
+        }
+
+        return BASE_PATH + OBJECTS_PATH + "/" + tableName + "/" + baseName;
+    }
+
+    public String getTableCurrentPath(String tableName) {
+        Map<String, Object> objects = (Map<String, Object>) metadata.get("objects");
+
+        if (objects == null || !objects.containsKey(tableName)) {
+            throw new IllegalArgumentException("Table " + tableName + " not found in metadata");
+        }
+
+        Map<String, Object> tableEntry = (Map<String, Object>) objects.get(tableName);
+
+        String currentName = (String) tableEntry.get("current");
+        if (currentName == null) {
+
+            logger.error("No current file found for table " + tableName);
+            return null;
+        }
+
+        return BASE_PATH + OBJECTS_PATH + "/" + tableName + "/" + currentName;
+    }
+
+    public List<String> getIncrementalFiles(String tableName) {
+        Map<String, Object> objects = (Map<String, Object>) metadata.get("objects");
+        if (objects != null && objects.containsKey(tableName)) {
+            Map<String, Object> tableEntry = (Map<String, Object>) objects.get(tableName);
+            List<String> incrementalFileNames = (List<String>) tableEntry.getOrDefault("incremental", new ArrayList<>());
+
+            // Erstelle den vollständigen Pfad für jede inkrementelle Datei
+            List<String> incrementalFilePaths = new ArrayList<>();
+            for (String fileName : incrementalFileNames) {
+                String fullPath = BASE_PATH + OBJECTS_PATH + "/" + tableName + "/" + fileName;
+                incrementalFilePaths.add(fullPath);
+            }
+
+            return incrementalFilePaths;
+        }
+        return new ArrayList<>();
+    }
+
+    public List<String> getTableNamesFromMetadata() {
+        Map<String, Object> objects = (Map<String, Object>) metadata.get("objects");
+        List<String> tableNames = new ArrayList<>();
+
+        for (String key : objects.keySet()) {
+            // Überprüfen, ob der Schlüssel ein Tabellenname ist (kein "path")
+            if (!key.equals("path")) {
+                tableNames.add(key);
+            }
+        }
+
+        return tableNames;
+    }
+
 }
