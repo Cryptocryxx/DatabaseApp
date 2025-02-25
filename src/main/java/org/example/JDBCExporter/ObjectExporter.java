@@ -10,6 +10,7 @@ import java.util.*;
 public class ObjectExporter {
     Logger logger = new Logger();
     FileWriter fileWriter = new FileWriter();
+    MetaDataController metaDataController = MetaDataController.getInstance();
 
     private final Connection connection;
     private final String filePath;
@@ -19,7 +20,7 @@ public class ObjectExporter {
         this.filePath = filePath;
     }
 
-    public Map<String, String> exportData(String version) throws SQLException {
+    public Map<String, String> exportData() throws SQLException {
         Map<String, String> dataFiles = new HashMap<>();
         logger.info("Starting exporting Data to JSON...");
         String query = String.format("""
@@ -31,8 +32,7 @@ public class ObjectExporter {
             while (tables.next()) {
                 String tableName = tables.getString("table_name");
                 List<Map<String, Object>> data = fetchDataFromTable(tableName);
-                fileWriter.createDirectory(filePath + "/" + tableName);
-                String newFilePath = String.format("%s/%s_%s.json", filePath + "/" + tableName, tableName, version);
+                String newFilePath = metaDataController.getObjectFilePath(tableName);
                 fileWriter.writeJSONFile(newFilePath, data);
                 dataFiles.put(tableName, newFilePath);
             }

@@ -27,7 +27,7 @@ public class JDBCConnection {
             String filePath = "./src/main/java/org/example/TestData/Objects";
             fileWriter.createDirectory(filePath);
             ObjectExporter objectExporter = new ObjectExporter(connection, filePath);
-            Map<String, String> dataFiles = objectExporter.exportData(version);
+            Map<String, String> dataFiles = objectExporter.exportData();
 
             // Schema Exporter
             SchemaExporter schemaExporter = new SchemaExporter(connection);
