@@ -75,9 +75,9 @@ public class SchemaExporter {
     private List<String> getColumnDefinitions(String tableName) throws SQLException {
         logger.info(String.format("Fetching column definitions for table: %s", tableName));
         String query = String.format("""
-            SELECT column_name, data_type, is_nullable, column_default
-            FROM information_schema.columns
-            WHERE table_name = '%s'""", tableName);
+        SELECT column_name, data_type, is_nullable, column_default
+        FROM information_schema.columns
+        WHERE table_name = '%s'""", tableName);
 
         List<String> columnDefinitions = new ArrayList<>();
 
@@ -85,19 +85,30 @@ public class SchemaExporter {
             while (columns.next()){
                 String columnName = columns.getString("column_name");
                 String dataType = columns.getString("data_type");
-                String defaultValue = (columns.getString("column_default") != null && !columns.getString("column_default").contains("nextval"))
-                        ? String.format(" DEFAULT %s", columns.getString("column_default")) : "";
-                columnDefinitions.add(String.format("%s %s%s", columnName, mapDataType(dataType), defaultValue));
+                String columnDefault = columns.getString("column_default");
+
+                boolean isSerial = columnDefault != null && columnDefault.startsWith("nextval(");
+
+                String columnDefinition;
+                if (isSerial) {
+                    columnDefinition = String.format("%s SERIAL", columnName);
+                } else {
+                    String defaultValue = (columnDefault != null) ? String.format(" DEFAULT %s", columnDefault) : "";
+                    columnDefinition = String.format("%s %s%s", columnName, mapDataType(dataType), defaultValue);
+                }
+
+                columnDefinitions.add(columnDefinition);
 
                 if(columns.getString("is_nullable").equals("NO")) {
-                    constraintsScript.append(String.format("ALTER TABLE %s ALTER COLUMN %S SET NOT NULL;\n", tableName, columnName));
+                    constraintsScript.append(String.format("ALTER TABLE %s ALTER COLUMN %s SET NOT NULL;\n", tableName, columnName));
                 }
             }
             logger.info(String.format("Successfully fetched column definitions for table: %s", tableName));
         }
-        
+
         return columnDefinitions;
     }
+
 
     private void getPrimaryKeys(String tableName) throws SQLException {
         String query = String.format("""
