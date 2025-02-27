@@ -101,15 +101,29 @@ public class SchemaExporter {
 
     private void getPrimaryKeys(String tableName) throws SQLException {
         String query = String.format("""
-            SELECT kcu.column_name
-            FROM information_schema.key_column_usage kcu
-            JOIN information_schema.table_constraints tc ON kcu.constraint_name = tc.constraint_name
-            WHERE kcu.table_name = '%s' AND tc.constraint_type = 'PRIMARY KEY'""", tableName);
+        SELECT kcu.column_name
+        FROM information_schema.key_column_usage kcu
+        JOIN information_schema.table_constraints tc ON kcu.constraint_name = tc.constraint_name
+        WHERE kcu.table_name = '%s' AND tc.constraint_type = 'PRIMARY KEY'
+        ORDER BY kcu.ordinal_position""", tableName);
 
         logger.info(String.format("Fetching primary keys for table: %s", tableName));
-        try (Statement statement = connection.createStatement(); ResultSet primaryKeys = statement.executeQuery(query)) {
-            if (primaryKeys.next()) {
-                constraintsScript.append(String.format("ALTER TABLE %s ADD PRIMARY KEY (%s);\n", tableName, primaryKeys.getString("column_name")));
+
+        try (Statement statement = connection.createStatement();
+             ResultSet primaryKeys = statement.executeQuery(query)) {
+
+            StringBuilder primaryKeyColumns = new StringBuilder();
+
+            while (primaryKeys.next()) {
+                if (primaryKeyColumns.length() > 0) {
+                    primaryKeyColumns.append(", ");
+                }
+                primaryKeyColumns.append(primaryKeys.getString("column_name"));
+            }
+
+            if (primaryKeyColumns.length() > 0) {
+                constraintsScript.append(String.format("ALTER TABLE %s ADD PRIMARY KEY (%s);\n",
+                        tableName, primaryKeyColumns.toString()));
             }
         }
     }
