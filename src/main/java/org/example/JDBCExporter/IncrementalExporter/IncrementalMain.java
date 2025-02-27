@@ -115,6 +115,54 @@ public class IncrementalMain {
         }
     }
 
+    public List<Map<String, Object>> getBackupCurrentData(String targetVersion, String tableName) throws IOException {
+        MetaDataController metaDataController = MetaDataController.getInstance();
+        Map<String, List<Map<String, Object>>> allTablesData = new HashMap<>();
+
+            // Lade die Basisdatei
+            String basePath = metaDataController.getTableBasePath(tableName);
+            logger.info("Loading base file from: " + basePath);
+            List<Map<String, Object>> BackupCurrentData = loadDataFromFile(basePath);
+            logger.info("Base data loaded for table " + tableName + ": " + BackupCurrentData);
+
+            // Lade alle inkrementellen Dateien
+            List<String> incrementalPaths = metaDataController.getIncrementalFiles(tableName);
+            logger.info("Incremental paths for table " + tableName + ": " + incrementalPaths);
+
+            for (String path : incrementalPaths) {
+                File file = new File(path);
+                logger.info("Processing incremental file: " + path);
+
+                if (file.exists()) {
+                    // Extrahiere die Versionsnummer aus dem Dateinamen
+                    String fileName = file.getName();
+                    String version = fileName.substring(fileName.lastIndexOf("v") + 1);
+
+                    // Stoppe, wenn die Zielversion erreicht ist
+                    if (version.equals(targetVersion)) {
+                        logger.info("Reached target version: " + targetVersion + " for table " + tableName + ", stopping.");
+                        break;
+                    }
+
+                    if (isIncrementalChangesFile(file)) {
+                        logger.info("File contains incremental changes.");
+                        Map<String, Object> incrementalChanges = loadIncrementalChangesFromFile(path);
+                        applyIncrementalChanges(BackupCurrentData, incrementalChanges);
+                    } else {
+                        logger.info("File contains full data.");
+                        List<Map<String, Object>> fullData = loadDataFromFile(path);
+                        BackupCurrentData = new ArrayList<>(fullData);
+                    }
+
+                    logger.info("Temporary current data after processing " + path + " for table " + tableName + ": " + BackupCurrentData);
+                } else {
+                    logger.warn("File does not exist: " + path);
+                }
+            }
+
+        return BackupCurrentData;
+    }
+
     /**
      * Überprüft, ob eine Datei inkrementelle Änderungen enthält.
      */

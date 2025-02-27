@@ -30,7 +30,7 @@ public class SchemaExporter {
 
         for(String tableName : tableNames){
             logger.info(String.format("Generating CREATE TABLE script for table: %s", tableName));
-            tableScript.append(String.format("CREATE TABLE %s (\n", tableName));
+            tableScript.append(String.format("CREATE TABLE \"%s\" (\n", tableName));
             List<String> columnDefinitions = getColumnDefinitions(tableName);
 
             tableScript.append(String.join(",\n", columnDefinitions)).append("\n);\n\n");
@@ -44,8 +44,11 @@ public class SchemaExporter {
         List<String> tableNames = getTableNames();
 
         for(String tableName: tableNames) {
-            logger.info(String.format("Generating constraints for table: %s", tableName));
+            logger.info(String.format("Generating PrimaryKeys for table: %s", tableName));
             getPrimaryKeys(tableName);
+        }
+        for(String tableName: tableNames) {
+            logger.info(String.format("Generating constraints for table: %s", tableName));
             getForeignKeys(tableName);
             getUniqueConstraints(tableName);
             getCheckConstraints(tableName);
@@ -91,16 +94,16 @@ public class SchemaExporter {
 
                 String columnDefinition;
                 if (isSerial) {
-                    columnDefinition = String.format("%s SERIAL", columnName);
+                    columnDefinition = String.format("\"%s\" SERIAL", columnName);
                 } else {
-                    String defaultValue = (columnDefault != null) ? String.format(" DEFAULT %s", columnDefault) : "";
-                    columnDefinition = String.format("%s %s%s", columnName, mapDataType(dataType), defaultValue);
+                    String defaultValue = (columnDefault != null) ? String.format(" DEFAULT \"%s\"", columnDefault) : "";
+                    columnDefinition = String.format("\"%s\" %s%s", columnName, mapDataType(dataType), defaultValue);
                 }
 
                 columnDefinitions.add(columnDefinition);
 
                 if(columns.getString("is_nullable").equals("NO")) {
-                    constraintsScript.append(String.format("ALTER TABLE %s ALTER COLUMN %s SET NOT NULL;\n", tableName, columnName));
+                    constraintsScript.append(String.format("ALTER TABLE \"%s\" ALTER COLUMN \"%s\" SET NOT NULL;\n", tableName, columnName));
                 }
             }
             logger.info(String.format("Successfully fetched column definitions for table: %s", tableName));
@@ -129,11 +132,11 @@ public class SchemaExporter {
                 if (primaryKeyColumns.length() > 0) {
                     primaryKeyColumns.append(", ");
                 }
-                primaryKeyColumns.append(primaryKeys.getString("column_name"));
+                primaryKeyColumns.append("\"" + primaryKeys.getString("column_name") + "\"");
             }
 
             if (primaryKeyColumns.length() > 0) {
-                constraintsScript.append(String.format("ALTER TABLE %s ADD PRIMARY KEY (%s);\n",
+                constraintsScript.append(String.format("ALTER TABLE \"%s\" ADD PRIMARY KEY (%s);\n",
                         tableName, primaryKeyColumns.toString()));
             }
         }
@@ -150,7 +153,7 @@ public class SchemaExporter {
         logger.info(String.format("Fetching foreign keys for table: %s", tableName));
         try (Statement statement = connection.createStatement(); ResultSet foreignKeys = statement.executeQuery(query)) {
             while (foreignKeys.next()) {
-                constraintsScript.append(String.format("ALTER TABLE %s ADD CONSTRAINT %s FOREIGN KEY (%s) REFERENCES %s(%s);\n",
+                constraintsScript.append(String.format("ALTER TABLE \"%s\" ADD CONSTRAINT \"%s\" FOREIGN KEY (\"%s\") REFERENCES \"%s\"(\"%s\");\n",
                         tableName,
                         foreignKeys.getString("constraint_name"),
                         foreignKeys.getString("column_name"),
@@ -170,7 +173,7 @@ public class SchemaExporter {
         logger.info(String.format("Fetching unique constraints for table: %s", tableName));
         try (Statement statement = connection.createStatement(); ResultSet uniqueConstraints = statement.executeQuery(query)) {
             while (uniqueConstraints.next()) {
-                constraintsScript.append(String.format("ALTER TABLE %s ADD CONSTRAINT %s UNIQUE (%s);\n",
+                constraintsScript.append(String.format("ALTER TABLE \"%s\" ADD CONSTRAINT \"%s\" UNIQUE (\"%s\");\n",
                         tableName,
                         uniqueConstraints.getString("constraint_name"),
                         uniqueConstraints.getString("column_name")));
@@ -188,7 +191,7 @@ public class SchemaExporter {
         logger.info(String.format("Fetching check constraints for table: %s", tableName));
         try (Statement statement = connection.createStatement(); ResultSet checkConstraints = statement.executeQuery(checkQuery)) {
             while (checkConstraints.next()) {
-                constraintsScript.append(String.format("ALTER TABLE %s ADD CONSTRAINT %s CHECK (%s);\n",
+                constraintsScript.append(String.format("ALTER TABLE \"%s\" ADD CONSTRAINT \"%s\" CHECK (%s);\n",
                         tableName,
                         checkConstraints.getString("constraint_name"),
                         checkConstraints.getString("check_clause")));

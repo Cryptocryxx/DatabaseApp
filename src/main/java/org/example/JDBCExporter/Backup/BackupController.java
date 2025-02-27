@@ -12,9 +12,9 @@ import java.sql.SQLException;
 
 public class BackupController {
     // db connection constants
-    private final String URL = "jdbc:postgresql://localhost:5432/my_database";
-    private final String USER = "user";
-    private final String PASSWORD = "password";
+    private final String URL = "jdbc:postgresql://localhost:5432/databack";
+    private final String USER = "benutzer";
+    private final String PASSWORD = "passwort";
 
     private final Connection connection;
     private final Logger logger;
@@ -28,19 +28,24 @@ public class BackupController {
         this.logger = new Logger();
         this.fileWriter = new FileWriter();
         this.createBackupHelper = new CreateBackupHelper(connection, logger, fileWriter);
-        this.restoreBackupHelper = new RestoreBackupHelper(connection, logger);
+        this.restoreBackupHelper = new RestoreBackupHelper(connection, logger, PASSWORD);
     }
 
     public void doBackup() throws SQLException, IOException {
         createBackupHelper.performBackup();
     }
 
-    public void restoreBackup() throws SQLException, IOException {
-        restoreBackupHelper.performRestore();
+    public void restoreBackupFromVersion(String version) throws SQLException, IOException {
+        restoreBackupHelper.performRestore(version);
+    }
+    public void restoreLastBackup() throws SQLException, IOException {
+        restoreBackupHelper.performRestore(MetaDataController.getInstance().getCurrentVersionName());
     }
 
     public static void main(String[] args) throws SQLException, IOException {
         BackupController backupController = new BackupController();
-        backupController.doBackup();
+        //backupController.doBackup();
+        //backupController.restoreLastBackup();
+        backupController.restoreBackupFromVersion("v6");
     }
 }
