@@ -67,7 +67,7 @@ public class DataBack implements Callable<Integer> {
         @Option(names = {"--password"}, required = true, description = "the password for the user")
         private String password;
 
-        @Option(names = {"--version"}, required = false, description = "version name (e.g: 'v4'")
+        @Option(names = {"--version"}, required = false, description = "version name (in Form \"v<VERSION_NUMBER>\"")
         private String version;
 
         @Override

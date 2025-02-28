@@ -29,23 +29,23 @@ public class IncrementalMain {
             for (String tableName : tableNames) {
                 logger.info("Processing table: "+ tableName);
 
-                // 1️⃣ Lade die Basisdatei
+                // Lade die Basisdatei
                 String basePath = metaDataController.getTableBasePath(tableName);
                 logger.info("Loading base file from: "+ basePath);
                 List<Map<String, Object>> currentData = incrementalHelper.loadDataFromFile(basePath);
                 logger.info("Base data loaded: "+ currentData);
 
-                // 2️⃣ Lade alle inkrementellen Dateien in der richtigen Reihenfolge
+                // Lade alle inkrementellen Dateien in der richtigen Reihenfolge
                 List<String> incrementalPaths = metaDataController.getIncrementalFiles(tableName);
                 logger.info("Incremental paths: "+ incrementalPaths);
 
-                // 3️⃣ Speichere den aktuellen Zustand in der Current-Datei
+                // Speichere den aktuellen Zustand in der Current-Datei
                 String currentPath = metaDataController.getTableCurrentPath(tableName);
                 logger.info("Saving current data to: "+ currentPath);
                 fileWriter.writeJSONFile(currentPath, currentData);
                 logger.info("Current data saved: "+ currentData);
                 incrementalHelper.applyIncrementalChanges(incrementalPaths, currentData);
-                // 4️⃣ Vergleiche die Current-Datei mit der neuesten inkrementellen Datei (falls vorhanden)
+                // Vergleiche die Current-Datei mit der neuesten inkrementellen Datei (falls vorhanden)
                 incrementalHelper.compareCurrentToIncremental(incrementalPaths, currentData, currentPath);
             }
         } catch (Exception e) {

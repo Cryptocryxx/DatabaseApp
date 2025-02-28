@@ -31,6 +31,10 @@ public class RestoreBackup {
 
     /**
      * Deletes the Data from the given Database and restores the Data from the Backup of the current version or a specific version
+     * First the Data is deleted by deleting all tables of the database with CASCADE.
+     * Then the stored table script under that version is executed.
+     * After that The stored data is transformed in insert commands and executed.
+     * Lastly the constraints are executes.
      * @param version Specific Version which is restored (e.g. "v3")
      * @throws SQLException If there is an Error with the database
      */
@@ -38,16 +42,8 @@ public class RestoreBackup {
         logger.info("Verbindung zur Datenbank hergestellt.");
         this.version = version;
 
-
         String tableScriptFile = MetaDataController.getInstance().getTableSchemaFilePath(version);
         String constraintsFile = MetaDataController.getInstance().getConstraintsFilePath(version);
-
-        Statement statement = connection.createStatement();
-        String[] splitUrl = connection.getMetaData().getURL().split("/");
-        int indexOfSlash = connection.getMetaData().getURL().lastIndexOf("/");
-        String URL = connection.getMetaData().getURL().substring(0, indexOfSlash);
-        String databaseName = splitUrl[splitUrl.length - 1];
-        databaseName = databaseName.concat(version);
 
         DeleteDataFromDatabase();
         logger.info("Creating Tables in Database...");
