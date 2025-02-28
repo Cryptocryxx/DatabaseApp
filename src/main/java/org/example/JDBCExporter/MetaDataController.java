@@ -20,8 +20,8 @@ public class MetaDataController {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     // path constants
-    private String basePath = "./src/main/java/org/example/TestData";
-    private final String META_FILE_PATH = basePath + "/metadata.json";
+    private final String BASE_PATH = "./BackupData";
+    private final String META_FILE_PATH = BASE_PATH + "/metadata.json";
     private final String CONSTRAINTS_PATH = "/Constraints";
     private final String TABLE_SCHEMA_PATH = "/tableSchema";
     private final String OBJECTS_PATH = "/Objects";
@@ -56,7 +56,7 @@ public class MetaDataController {
     }
 
     private void checkMetaFile(){
-        metadata.putIfAbsent("path", basePath);
+        metadata.putIfAbsent("path", BASE_PATH);
         if (!metadata.containsKey("constraints")) {
             Map<String, Object> constraints = new HashMap<>();
             constraints.put("path", CONSTRAINTS_PATH);
@@ -75,10 +75,10 @@ public class MetaDataController {
             metadata.put("objects", objects);
         }
 
-        fileWriter.createDirectory(basePath);
-        fileWriter.createDirectory(basePath + CONSTRAINTS_PATH);
-        fileWriter.createDirectory(basePath + TABLE_SCHEMA_PATH);
-        fileWriter.createDirectory(basePath + OBJECTS_PATH);
+        fileWriter.createDirectory(BASE_PATH);
+        fileWriter.createDirectory(BASE_PATH + CONSTRAINTS_PATH);
+        fileWriter.createDirectory(BASE_PATH + TABLE_SCHEMA_PATH);
+        fileWriter.createDirectory(BASE_PATH + OBJECTS_PATH);
     }
 
     public void updateMetaData(Connection connection){
@@ -132,7 +132,7 @@ public class MetaDataController {
                 tableEntry.put("current", tableName + "_v1.json");
                 updatedObjects.put(tableName, tableEntry);
 
-                fileWriter.createDirectory(basePath + OBJECTS_PATH + "/" + tableName);
+                fileWriter.createDirectory(BASE_PATH + OBJECTS_PATH + "/" + tableName);
             }
         }
         metadata.put("objects", updatedObjects);
@@ -232,7 +232,7 @@ public class MetaDataController {
     }
 
     public String getObjectsFilePath() {
-        return basePath + OBJECTS_PATH;
+        return BASE_PATH + OBJECTS_PATH;
     }
 
     public String getConstraintsFilePath() {
@@ -257,7 +257,7 @@ public class MetaDataController {
                     .orElseThrow(() -> new IllegalArgumentException("No constraints file found for version " + version));
         }
 
-        return basePath + CONSTRAINTS_PATH + "/" + fileName;
+        return BASE_PATH + CONSTRAINTS_PATH + "/" + fileName;
     }
 
     public String getTableSchemaFilePath(String version) {
@@ -274,7 +274,7 @@ public class MetaDataController {
                     .orElseThrow(() -> new IllegalArgumentException("No tableSchema file found for version " + version));
         }
 
-        return basePath + TABLE_SCHEMA_PATH + "/" + fileName;
+        return BASE_PATH + TABLE_SCHEMA_PATH + "/" + fileName;
     }
 
     //File path for a tablename
@@ -299,7 +299,7 @@ public class MetaDataController {
             fileName = (String) tableEntry.get("basis");
         }
 
-        return basePath + OBJECTS_PATH + "/" + tableName + "/" + fileName;
+        return BASE_PATH + OBJECTS_PATH + "/" + tableName + "/" + fileName;
     }
 
     public String getTableBasePath(String tableName) {
@@ -317,7 +317,7 @@ public class MetaDataController {
             return null;
         }
 
-        return basePath + OBJECTS_PATH + "/" + tableName + "/" + baseName;
+        return BASE_PATH + OBJECTS_PATH + "/" + tableName + "/" + baseName;
     }
 
     public String getTableCurrentPath(String tableName) {
@@ -336,7 +336,7 @@ public class MetaDataController {
             return null;
         }
 
-        return basePath + OBJECTS_PATH + "/" + tableName + "/" + currentName;
+        return BASE_PATH + OBJECTS_PATH + "/" + tableName + "/" + currentName;
     }
 
     public List<String> getIncrementalFiles(String tableName) {
@@ -348,7 +348,7 @@ public class MetaDataController {
             // Erstelle den vollständigen Pfad für jede inkrementelle Datei
             List<String> incrementalFilePaths = new ArrayList<>();
             for (String fileName : incrementalFileNames) {
-                String fullPath = basePath + OBJECTS_PATH + "/" + tableName + "/" + fileName;
+                String fullPath = BASE_PATH + OBJECTS_PATH + "/" + tableName + "/" + fileName;
                 incrementalFilePaths.add(fullPath);
             }
 
@@ -370,9 +370,4 @@ public class MetaDataController {
 
         return tableNames;
     }
-
-    public void setBasePath(String basePath) {
-        this.basePath = basePath;
-    }
-
 }

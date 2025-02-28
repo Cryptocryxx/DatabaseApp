@@ -40,13 +40,10 @@ public class DataBack implements Callable<Integer> {
         @Option(names = {"--password"}, required = true, description = "the password for the user")
         private String password;
 
-        @Option(names = {"--output"}, required = false, description = "File path where the backup will be stored.")
-        private String outputPath;
-
         @Override
         public Integer call() {
-            System.out.printf("Backing up database '%s' to '%s'",
-                    url, outputPath);
+            System.out.printf("Backing up database '%s'",
+                    url);
             try {
                 BackupController backupController = new BackupController(url, user, password);
                 backupController.doBackup();

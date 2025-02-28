@@ -14,8 +14,6 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.util.*;
 
-import static org.example.JDBCExporter.JDBCConnection.*;
-
 public class IncrementalMain {
 
     static Logger logger = new Logger();

@@ -2,12 +2,8 @@ package org.example.JDBCExporter.Backup;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jdk.jfr.MemoryAddress;
 import org.example.JDBCExporter.IncrementalExporter.IncrementalMain;
-import org.example.JDBCExporter.JDBCConnection;
-import org.example.JDBCExporter.MetaData;
 import org.example.JDBCExporter.MetaDataController;
-import org.example.JDBCExporter.ObjectExporter;
 import org.example.Logger.Logger;
 import org.postgresql.util.PSQLException;
 
@@ -42,7 +38,6 @@ public class RestoreBackupHelper {
         String constraintsPath = "./src/main/java/org/example/TestData/Constraints";
         String dataFilesPath = "./src/main/java/org/example/TestData/Objects";
 
-        MetaData metaData = MetaData.getInstance();
 
         String tableScriptFile = tableScriptPath + "/create_tables_" + version + ".sql";
         String constraintsFile = constraintsPath + "/add_constraints_" + version + ".sql";
