@@ -1,14 +1,15 @@
-package org.example.JDBCExporter.Backup;
+package hdm.DataBack.JDBCExporter.Backup;
 
-import org.example.JDBCExporter.*;
-import org.example.JDBCExporter.IncrementalExporter.IncrementalMain;
-import org.example.Logger.Logger;
+import hdm.DataBack.JDBCExporter.FileWriter;
+import hdm.DataBack.JDBCExporter.MetaDataController;
+import hdm.DataBack.JDBCExporter.ObjectExporter;
+import hdm.DataBack.JDBCExporter.SchemaExporter;
+import hdm.DataBack.JDBCExporter.IncrementalExporter.IncrementalMain;
+import hdm.DataBack.Logger.Logger;
 
 import java.io.IOException;
 import java.sql.Connection;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 
 public class CreateBackup {
     private final Connection connection;
@@ -43,7 +44,6 @@ public class CreateBackup {
 
         exportObjects();
         exportSchema();
-        logger.info("Current version: " + metaDataController.getCurrentVersion());
         if(metaDataController.getCurrentVersion() > 0){
             exportIncremental();
         }

@@ -1,8 +1,7 @@
-package org.example.JDBCExporter;
+package hdm.DataBack.JDBCExporter;
 
-import org.example.Logger.Logger;
+import hdm.DataBack.Logger.Logger;
 
-import java.io.File;
 import java.io.IOException;
 import java.sql.*;
 import java.util.*;

@@ -1,8 +1,8 @@
-package org.example.JDBCExporter.Backup;
+package hdm.DataBack.JDBCExporter.Backup;
 
-import org.example.JDBCExporter.FileWriter;
-import org.example.JDBCExporter.MetaDataController;
-import org.example.Logger.Logger;
+import hdm.DataBack.JDBCExporter.FileWriter;
+import hdm.DataBack.JDBCExporter.MetaDataController;
+import hdm.DataBack.Logger.Logger;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -76,9 +76,9 @@ public class BackupController {
      * @throws IOException if an error occurs while handling backups
      */
     public static void main(String[] args) throws SQLException, IOException {
-        BackupController backupController = new BackupController("jdbc:postgresql://localhost:5432/my_database", "user", "password");
-        backupController.performBackup();
+        BackupController backupController = new BackupController("jdbc:postgresql://localhost:5432/databack", "benutzer", "passwort");
+        //backupController.performBackup();
         //backupController.restoreLastBackup();
-        //backupController.restoreBackupFromVersion("v3");
+        backupController.restoreBackupFromVersion("v2");
     }
 }

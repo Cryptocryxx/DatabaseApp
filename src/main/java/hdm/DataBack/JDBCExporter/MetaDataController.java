@@ -1,7 +1,7 @@
-package org.example.JDBCExporter;
+package hdm.DataBack.JDBCExporter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.example.Logger.Logger;
+import hdm.DataBack.Logger.Logger;
 
 import java.io.File;
 import java.io.IOException;

@@ -1,11 +1,11 @@
-package org.example.JDBCExporter.IncrementalExporter;
+package hdm.DataBack.JDBCExporter.IncrementalExporter;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.example.JDBCExporter.FileWriter;
-import org.example.JDBCExporter.MetaDataController;
-import org.example.Logger.Logger;
+import hdm.DataBack.JDBCExporter.FileWriter;
+import hdm.DataBack.JDBCExporter.MetaDataController;
+import hdm.DataBack.Logger.Logger;
 
 import java.io.File;
 import java.io.IOException;

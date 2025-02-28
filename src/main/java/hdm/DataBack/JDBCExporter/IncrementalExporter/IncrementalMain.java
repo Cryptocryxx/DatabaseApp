@@ -1,8 +1,8 @@
-package org.example.JDBCExporter.IncrementalExporter;
+package hdm.DataBack.JDBCExporter.IncrementalExporter;
 
-import org.example.JDBCExporter.FileWriter;
-import org.example.JDBCExporter.MetaDataController;
-import org.example.Logger.Logger;
+import hdm.DataBack.JDBCExporter.FileWriter;
+import hdm.DataBack.JDBCExporter.MetaDataController;
+import hdm.DataBack.Logger.Logger;
 
 import java.io.IOException;
 import java.util.*;

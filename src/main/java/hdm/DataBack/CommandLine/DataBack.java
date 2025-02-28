@@ -1,6 +1,6 @@
-package org.example.CommandLine;
+package hdm.DataBack.CommandLine;
 
-import org.example.JDBCExporter.Backup.BackupController;
+import hdm.DataBack.JDBCExporter.Backup.BackupController;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;

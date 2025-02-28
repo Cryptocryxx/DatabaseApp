@@ -1,6 +1,6 @@
-package org.example.JDBCExporter;
+package hdm.DataBack.JDBCExporter;
 
-import org.example.Logger.Logger;
+import hdm.DataBack.Logger.Logger;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -9,7 +9,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.example.JDBCExporter.DataTypeMapper.mapDataType;
+import static hdm.DataBack.JDBCExporter.DataTypeMapper.mapDataType;
 
 public class SchemaExporter {
     Logger logger = new Logger();

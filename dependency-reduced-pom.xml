@@ -36,7 +36,7 @@
         <configuration>
           <archive>
             <manifest>
-              <mainClass>org.example.CommandLine.DataBack</mainClass>
+              <mainClass>hdm.DataBack.CommandLine.DataBack</mainClass>
             </manifest>
           </archive>
         </configuration>
@@ -91,7 +91,7 @@
           <transformers>
             <transformer>
               <manifestEntries>
-                <Main-Class>org.example.CommandLine.DataBack</Main-Class>
+                <Main-Class>hdm.DataBack.CommandLine.DataBack</Main-Class>
                 <Multi-Release>true</Multi-Release>
               </manifestEntries>
             </transformer>

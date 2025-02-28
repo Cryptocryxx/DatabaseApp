@@ -1,10 +1,10 @@
-package org.example.JDBCExporter.Backup;
+package hdm.DataBack.JDBCExporter.Backup;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.example.JDBCExporter.IncrementalExporter.IncrementalHelper;
-import org.example.JDBCExporter.MetaDataController;
-import org.example.Logger.Logger;
+import hdm.DataBack.JDBCExporter.IncrementalExporter.IncrementalHelper;
+import hdm.DataBack.JDBCExporter.MetaDataController;
+import hdm.DataBack.Logger.Logger;
 
 import java.io.File;
 import java.io.IOException;
@@ -118,7 +118,7 @@ public class RestoreBackup {
      * @return a string containing the SQL insert queries for all tables
      */
     private String generateInsertQuery(String version){
-        String[] tableNames = getTableNames();
+        List<String> tableNames = MetaDataController.getInstance().getTableNames();
         if (tableNames == null) {
             return null;
         }
@@ -190,28 +190,6 @@ public class RestoreBackup {
             return MetaDataController.getInstance().getTableCurrentFilePath(tableName);
         }
         return null;
-    }
-
-    /**
-     * Retrieves the list of table names from the metadata storage.
-     *
-     * @return an array of table names
-     */
-    private String[] getTableNames() {
-        String filePath = MetaDataController.getInstance().getObjectsFilePath();
-        File folder = new File(filePath);
-        File[] tableFolders = folder.listFiles(File::isDirectory);
-
-        if (tableFolders == null) {
-            logger.error("No data for import found!");
-            return null;
-        }
-        String[] tableNames = new String[tableFolders.length];
-        for (int i = 0; i < tableFolders.length; i++) {
-            String tableName = tableFolders[i].getName();
-            tableNames[i] = tableName;
-        }
-        return tableNames;
     }
 
     /**

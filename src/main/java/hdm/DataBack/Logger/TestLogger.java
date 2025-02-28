@@ -1,4 +1,4 @@
-package org.example.Logger;
+package hdm.DataBack.Logger;
 
 public class TestLogger {
     public static void main(String[] args) {
