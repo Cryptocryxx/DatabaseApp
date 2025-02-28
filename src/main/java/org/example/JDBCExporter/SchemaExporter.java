@@ -96,7 +96,7 @@ public class SchemaExporter {
                 if (isSerial) {
                     columnDefinition = String.format("\"%s\" SERIAL", columnName);
                 } else {
-                    String defaultValue = (columnDefault != null) ? String.format(" DEFAULT \"%s\"", columnDefault) : "";
+                    String defaultValue = (columnDefault != null) ? String.format(" DEFAULT %s", columnDefault) : "";
                     columnDefinition = String.format("\"%s\" %s%s", columnName, mapDataType(dataType), defaultValue);
                 }
 

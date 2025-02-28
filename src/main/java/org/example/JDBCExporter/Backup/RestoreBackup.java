@@ -6,17 +6,14 @@ import org.example.JDBCExporter.IncrementalExporter.IncrementalHelper;
 import org.example.JDBCExporter.IncrementalExporter.IncrementalMain;
 import org.example.JDBCExporter.MetaDataController;
 import org.example.Logger.Logger;
-import org.postgresql.util.PSQLException;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -47,37 +44,41 @@ public class RestoreBackup {
         String databaseName = splitUrl[splitUrl.length - 1];
         databaseName = databaseName.concat(version);
 
-        databaseName = createNewDatabase(statement, databaseName);
-        URL = URL.concat("/" + databaseName);
-        Connection connectionToNewDatabase = DriverManager.getConnection(URL, connection.getMetaData().getUserName(), password);
-        logger.info("Creating Tables in new Database...");
-        executeSqlScript(connectionToNewDatabase, tableScriptFile, false);
+        DeleteDataFromDatabase();
+        logger.info("Creating Tables in Database...");
+        executeSqlScript(connection, tableScriptFile, false);
         logger.info("Generating Data from JSON file");
         String insertQuery = generateInsertQuery(version);
-        logger.info("Inserting Data in new Database...");
-        executeSqlScript(connectionToNewDatabase, insertQuery, true);
+        logger.info("Inserting Data in Database...");
+        executeSqlScript(connection, insertQuery, true);
         logger.info("Altering Tables and adding Constraints...");
-        executeSqlScript(connectionToNewDatabase, constraintsFile, false);
+        executeSqlScript(connection, constraintsFile, false);
 
         logger.info("Database sucessfully recovered from backup");
         connection.close();
     }
 
-    private String createNewDatabase(Statement statement, String databaseName) throws SQLException {
-        do {
-            try {
-                statement.execute("""
-                        CREATE DATABASE %s OWNER %s
-                        """.formatted(databaseName, connection.getMetaData().getUserName()));
-                logger.info("Succesfully created new Database with name %s".formatted(databaseName));
-                break;
-            } catch (PSQLException e) {
-                logger.warn(e.getMessage());
-                if (databaseName.length() >= 63) throw new RuntimeException("The Databasename got too long please delete some copys and retry!");
-                databaseName = databaseName.concat("copy");
+    private void DeleteDataFromDatabase() throws SQLException {
+        DatabaseMetaData metaData = connection.getMetaData();
+
+        List<String> tableNames = new ArrayList<>();
+
+        try (ResultSet rs = metaData.getTables(null, null, "%", new String[] {"TABLE"})) {
+            while (rs.next()) {
+                String tableName = rs.getString("TABLE_NAME");
+                tableNames.add(tableName);
             }
-        }while (true);
-        return databaseName;
+        }
+
+        try (Statement statement = connection.createStatement()) {
+            for (String tableName : tableNames) {
+                statement.execute(String.format("""
+                        DROP TABLE IF EXISTS \"%s\" CASCADE
+                        """, tableName));
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private List<Map<String, Object>> generateInsertQueryFromJson(String filePath) {
