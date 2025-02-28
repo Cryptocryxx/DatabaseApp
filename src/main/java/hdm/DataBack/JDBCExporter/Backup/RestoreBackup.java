@@ -117,7 +117,7 @@ public class RestoreBackup {
      * @param version the backup version to restore
      * @return a string containing the SQL insert queries for all tables
      */
-    private String generateInsertQuery(String version){
+    private String generateInsertQuery(String version) {
         List<String> tableNames = MetaDataController.getInstance().getTableNames();
         if (tableNames == null) {
             return null;
@@ -129,14 +129,13 @@ public class RestoreBackup {
             if (MetaDataController.getInstance().getCurrentVersionName().equals(version)) {
                 String filePathToCurrentData = getFilePathToCurrentData(tableName, version);
                 data = generateInsertQueryFromJson(filePathToCurrentData);
-            }else {
+            } else {
                 IncrementalHelper incrementalHelper = new IncrementalHelper();
                 try {
                     data = incrementalHelper.getBackupCurrentData(version, tableName);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
-
             }
             if (data.isEmpty()) continue; // Keine Daten vorhanden, weiter zur nächsten Tabelle
 
@@ -150,10 +149,21 @@ public class RestoreBackup {
                 StringBuilder values = new StringBuilder("(");
 
                 for (Map.Entry<String, Object> entry : actualData.entrySet()) {
+                    String columnName = entry.getKey();
+
+                    // Überprüfen, ob die Spalte SERIAL ist
+                    try {
+                        if (isSerialColumn(tableName, columnName)) {
+                            continue; // Spalte überspringen, wenn sie SERIAL ist
+                        }
+                    } catch (SQLException e) {
+                        logger.error("Fehler beim Überprüfen des Spaltentyps: " + e.getMessage());
+                        throw new RuntimeException(e);
+                    }
 
                     if (!columnsSet) {
                         if (columns.length() > 0) columns.append(", ");
-                        columns.append(entry.getKey());
+                        columns.append(columnName);
                     }
 
                     values.append(formatValue(entry.getValue())).append(", ");
@@ -174,7 +184,7 @@ public class RestoreBackup {
                         .append(System.lineSeparator());
             }
         }
-        logger.info("Succesfully generated Insert comands");
+        logger.info("Successfully generated INSERT commands");
         return queryBuilder.toString();
     }
 
@@ -206,9 +216,6 @@ public class RestoreBackup {
         } else if (value instanceof Boolean) {
             return (Boolean) value ? "TRUE" : "FALSE"; // Boolean direkt in SQL-Format
         } else if (value instanceof Number) {
-            if (isPossibleTimestamp((Number) value)) {
-                return "'" + convertTimestampToDate((Number) value) + "'"; // Datum richtig formatieren
-            }
             return value.toString(); // Zahlen direkt übernehmen (ohne Anführungszeichen)
         } else {
             return "'" + value.toString().replace("'", "''") + "'"; // Fallback als String
@@ -216,26 +223,35 @@ public class RestoreBackup {
     }
 
     /**
-     * Checks if a number represents a possible UNIX timestamp.
+     * Checks if a column is of type SERIAL.
      *
-     * @param value the number to check
-     * @return true if the number is a valid timestamp, false otherwise
+     * @param tableName the name of the table
+     * @param columnName the name of the column
+     * @return true if the column is of type SERIAL, false otherwise
+     * @throws SQLException if a database access error occurs
      */
-    private boolean isPossibleTimestamp(Number value) {
-        long timestamp = value.longValue();
-        return timestamp > 1_000_000_000L; // Prüft, ob größer als Sekunden-Timestamp
-    }
+    private boolean isSerialColumn(String tableName, String columnName) throws SQLException {
+        String query = """
+        SELECT EXISTS (
+            SELECT 1
+            FROM information_schema.columns
+            WHERE table_name = ?
+            AND column_name = ?
+            AND data_type = 'integer'
+            AND column_default LIKE 'nextval%'
+        );
+        """;
 
-    /**
-     * Converts a UNIX timestamp into a SQL-compatible date string.
-     *
-     * @param value the timestamp value
-     * @return the formatted date string (YYYY-MM-DD)
-     */
-    private String convertTimestampToDate(Number value) {
-        Date date = new Date(value.longValue());
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        return dateFormat.format(date);
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setString(1, tableName);
+            stmt.setString(2, columnName);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getBoolean(1);
+                }
+            }
+        }
+        return false;
     }
 
     /**
