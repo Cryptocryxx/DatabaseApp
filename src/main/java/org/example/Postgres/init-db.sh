@@ -12,5 +12,6 @@ EOSQL
 psql -v ON_ERROR_STOP=1 --username user --dbname=my_database \
   --file /home/SQLData/tableSchema.sql
 
-  psql -v ON_ERROR_STOP=1 --username user --dbname=my_database \
+
+ psql -v ON_ERROR_STOP=1 --username user --dbname=my_database \
     --file /home/SQLData/insertData.sql

@@ -41,7 +41,7 @@ public class RestoreBackup {
      * - Inserts data from the backup files.
      * - Restores constraints.
      *
-     * @param version the version identifier in the format "v<VERSION_NUMBER>"
+     * @param version the version identifier in the format "v1"
      * @throws SQLException if a database access error occurs
      */
     public void performRestore(String version) throws SQLException {

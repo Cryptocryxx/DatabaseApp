@@ -50,7 +50,7 @@ public class BackupController {
     /**
      * Restores a specific backup version.
      *
-     * @param version the version identifier in the format "v<VERSION_NUMBER>"
+     * @param version the version identifier in the format "v1"
      * @throws SQLException if a database access error occurs
      * @throws IOException if an error occurs while reading backup files
      */
