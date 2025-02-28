@@ -1,7 +1,6 @@
 package org.example.JDBCExporter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.logging.log4j.LogManager;
 import org.example.Logger.Logger;
 
 import java.io.File;
@@ -25,7 +24,7 @@ public class MetaDataController {
     private final String CONSTRAINTS_PATH = "/Constraints";
     private final String TABLE_SCHEMA_PATH = "/tableSchema";
     private final String OBJECTS_PATH = "/Objects";
-    private final org.apache.logging.log4j.Logger log = LogManager.getLogger(MetaDataController.class);
+    private final String OBJECTS_TABLES_PATH = "/tables";
 
     private Map<String, Object> metadata;
 
@@ -48,6 +47,12 @@ public class MetaDataController {
         checkMetaFile();
     }
 
+    /**
+     * Returns the singleton instance of MetaDataController.
+     * Ensures thread-safe lazy initialization.
+     *
+     * @return instance of MetaDataController
+     */
     public static synchronized MetaDataController getInstance() {
         if (instance == null) {
             instance = new MetaDataController();
@@ -55,6 +60,10 @@ public class MetaDataController {
         return instance;
     }
 
+    /**
+     * Ensures that the metadata file is initialized properly with required structures.
+     * Creates necessary directories if they do not exist.
+     */
     private void checkMetaFile(){
         metadata.putIfAbsent("path", BASE_PATH);
         if (!metadata.containsKey("constraints")) {
@@ -72,6 +81,7 @@ public class MetaDataController {
         if (!metadata.containsKey("objects")) {
             Map<String, Object> objects = new HashMap<>();
             objects.put("path", OBJECTS_PATH);
+            objects.put("tables", new HashMap<String, Object>());
             metadata.put("objects", objects);
         }
 
@@ -79,8 +89,14 @@ public class MetaDataController {
         fileWriter.createDirectory(BASE_PATH + CONSTRAINTS_PATH);
         fileWriter.createDirectory(BASE_PATH + TABLE_SCHEMA_PATH);
         fileWriter.createDirectory(BASE_PATH + OBJECTS_PATH);
+        fileWriter.createDirectory(BASE_PATH + OBJECTS_PATH + OBJECTS_TABLES_PATH);
     }
 
+    /**
+     * Updates metadata with the latest constraints, table schema versions, and table objects.
+     *
+     * @param connection the database connection to fetch table names
+     */
     public void updateMetaData(Connection connection){
         // Update constraints versions
         Map<String, Object> constraints = (Map<String, Object>) metadata.get("constraints");
@@ -106,13 +122,12 @@ public class MetaDataController {
 
         // Update objects
         Map<String, Object> objects = (Map<String, Object>) metadata.get("objects");
-        Map<String, Object> updatedObjects = new HashMap<>();
-        updatedObjects.put("path", objects.get("path"));
+        Map<String, Object> tableObjects = (Map<String, Object>) objects.get("tables");
 
         List<String> tableNames = getTableNamesFromDB(connection);
         for(String tableName : tableNames) {
-            if (objects.containsKey(tableName)) {
-                Map<String, Object> tableEntry = (Map<String, Object>) objects.get(tableName);
+            if (tableObjects.containsKey(tableName)) {
+                Map<String, Object> tableEntry = (Map<String, Object>) tableObjects.get(tableName);
                 List<String> incrementalList = (List<String>) tableEntry.get("incremental");
                 if (incrementalList == null) {
                     incrementalList = new ArrayList<>();
@@ -121,29 +136,41 @@ public class MetaDataController {
                 String nextIncremental = tableName + "_incremental_" + nextVersionStr + ".json";
                 incrementalList.add(nextIncremental);
                 tableEntry.put("current", tableName + "_current.json");
-                updatedObjects.put(tableName, tableEntry);
+                tableObjects.put(tableName, tableEntry);
             }else{
                 Map<String, Object> tableEntry = new HashMap<>();
                 tableEntry.put("path", "/" + tableName);
-                tableEntry.put("basis", tableName + "_v1.json");
+                tableEntry.put("base", tableName + "_v1.json");
 
                 List<String> incrementalList = new ArrayList<>();
                 tableEntry.put("incremental", incrementalList);
                 tableEntry.put("current", tableName + "_v1.json");
-                updatedObjects.put(tableName, tableEntry);
+                tableObjects.put(tableName, tableEntry);
 
-                fileWriter.createDirectory(BASE_PATH + OBJECTS_PATH + "/" + tableName);
+                fileWriter.createDirectory(BASE_PATH + OBJECTS_PATH + OBJECTS_TABLES_PATH + "/" + tableName);
             }
         }
-        metadata.put("objects", updatedObjects);
+        objects.put("tables", tableObjects);
+        metadata.put("objects", objects);
     }
 
+    /**
+     * Saves the metadata to the metadata.json file.
+     *
+     * @throws IOException if writing to the file fails
+     */
     public void save() throws IOException {
         File metaFile = new File(META_FILE_PATH);
         objectMapper.writerWithDefaultPrettyPrinter().writeValue(metaFile, metadata);
         logger.info("Saved metadata file at: " + metaFile.getAbsolutePath());
     }
 
+    /**
+     * Retrieves table names from the database schema.
+     *
+     * @param connection the database connection
+     * @return list of table names in the public schema
+     */
     private List<String> getTableNamesFromDB(Connection connection) {
         List<String> tableNames = new ArrayList<>();
         String query = String.format("""
@@ -162,6 +189,12 @@ public class MetaDataController {
         return tableNames;
     }
 
+    /**
+     * Extracts the version number from a given filename.
+     *
+     * @param filename the filename containing a version
+     * @return extracted version number, defaults to 1 if extraction fails
+     */
     public int getCurrentVersion(String filename) {
         int version = 1;
         try {
@@ -175,74 +208,77 @@ public class MetaDataController {
         return version;
     }
 
+    /**
+     * Retrieves the current version index from metadata.
+     *
+     * @return the latest version index
+     */
     public Integer getCurrentVersion() {
         Map<String, Object> constraints = (Map<String, Object>) metadata.get("constraints");
-        String constraintsPath = (String) constraints.get("path");
         List<String> versions = (List<String>) constraints.get("versions");
 
         return versions.size() - 1;
     }
 
+
+    /**
+     * Retrieves the current version name from metadata.
+     *
+     * @return the latest version name in string format
+     */
     public String getCurrentVersionName() {
         Map<String, Object> constraints = (Map<String, Object>) metadata.get("constraints");
         List<String> versions = (List<String>) constraints.get("versions");
 
         if (versions.isEmpty()) {
-            return ""; // Keine Versionen vorhanden
+            return "";
         }
 
-        // Hole den Dateinamen der letzten Version
         String lastVersionFile = versions.get(versions.size() - 1);
 
-        // Extrahiere die Versionsnummer aus dem Dateinamen
         int vIndex = lastVersionFile.indexOf("v");
         int dotIndex = lastVersionFile.indexOf(".", vIndex);
 
         if (vIndex != -1 && dotIndex != -1) {
             return lastVersionFile.substring(vIndex, dotIndex);
         } else {
-            return ""; // Falls die Versionsnummer nicht extrahiert werden kann
+            return "";
         }
     }
 
-    public String getLastVersionName() {
-        Map<String, Object> constraints = (Map<String, Object>) metadata.get("constraints");
-        List<String> versions = (List<String>) constraints.get("versions");
-
-        if (versions.size() < 2) {
-            return ""; // Es gibt keine vorherige Version
-        }
-
-        // Hole den Dateinamen der vorherigen Version
-        String lastVersionFile = versions.get(versions.size() - 2);
-
-        // Extrahiere die Versionsnummer aus dem Dateinamen
-        int vIndex = lastVersionFile.indexOf("v");
-        int dotIndex = lastVersionFile.indexOf(".", vIndex);
-
-        if (vIndex != -1 && dotIndex != -1) {
-            return lastVersionFile.substring(vIndex, dotIndex);
-        } else {
-            return ""; // Falls die Versionsnummer nicht extrahiert werden kann
-        }
-    }
-
-    public String getMetaDataFilePath() {
-        return META_FILE_PATH;
-    }
-
+    /**
+     * Gets the base path where object files are stored.
+     *
+     * @return path to objects directory
+     */
     public String getObjectsFilePath() {
         return BASE_PATH + OBJECTS_PATH;
     }
 
+    /**
+     * Gets the base path where constraints files are stored.
+     *
+     * @return path to constraints directory
+     */
     public String getConstraintsFilePath() {
         return getConstraintsFilePath(null);
     }
 
+    /**
+     * Gets the base path where table schema files are stored.
+     *
+     * @return path to table schema directory
+     */
     public String getTableSchemaFilePath() {
         return getTableSchemaFilePath(null);
     }
 
+    /**
+     * Gets the file path of a specific constraints version.
+     *
+     * @param version the version name (e.g., "v1")
+     * @return the file path for the requested constraints version
+     */
     public String getConstraintsFilePath(String version) {
         Map<String, Object> constraints = (Map<String, Object>) metadata.get("constraints");
         List<String> versions = (List<String>) constraints.get("versions");
@@ -260,6 +296,13 @@ public class MetaDataController {
         return BASE_PATH + CONSTRAINTS_PATH + "/" + fileName;
     }
 
+
+    /**
+     * Gets the file path of a specific table schema version.
+     *
+     * @param version the version name (e.g., "v1")
+     * @return the file path for the requested table schema version
+     */
     public String getTableSchemaFilePath(String version) {
         Map<String, Object> tableSchema = (Map<String, Object>) metadata.get("tableSchema");
         List<String> versions = (List<String>) tableSchema.get("versions");
@@ -277,97 +320,118 @@ public class MetaDataController {
         return BASE_PATH + TABLE_SCHEMA_PATH + "/" + fileName;
     }
 
-    //File path for a tablename
-    public String getObjectFilePath(String tableName) {
+    /**
+     * Gets the latest file path for a specific table.
+     *
+     * @param tableName the name of the table
+     * @return the latest file path for the table's data
+     */
+    public String getTableFilePath(String tableName) {
         Map<String, Object> objects = (Map<String, Object>) metadata.get("objects");
+        Map<String, Object> tableObjects = (Map<String, Object>) objects.get("tables");
 
-        for (String objectName : objects.keySet()) {
-            logger.info(objectName);
-        }
-
-        if (!objects.containsKey(tableName)) {
+        if (!tableObjects.containsKey(tableName)) {
             throw new IllegalArgumentException("Table " + tableName + " not found in metadata");
         }
 
-        Map<String, Object> tableEntry = (Map<String, Object>) objects.get(tableName);
+        Map<String, Object> tableEntry = (Map<String, Object>) tableObjects.get(tableName);
         String fileName;
         List<String> incrementalList = (List<String>) tableEntry.get("incremental");
 
         if (incrementalList != null && !incrementalList.isEmpty()) {
             fileName = incrementalList.get(incrementalList.size() - 1);
         } else {
-            fileName = (String) tableEntry.get("basis");
+            fileName = (String) tableEntry.get("base");
         }
 
-        return BASE_PATH + OBJECTS_PATH + "/" + tableName + "/" + fileName;
+        return BASE_PATH + OBJECTS_PATH + OBJECTS_TABLES_PATH + "/" + tableName + "/" + fileName;
     }
 
-    public String getTableBasePath(String tableName) {
+    /**
+     * Gets the base file path for a specific table.
+     *
+     * @param tableName the name of the table
+     * @return the base file path for the table's data
+     */
+    public String getTableBaseFilePath(String tableName) {
         Map<String, Object> objects = (Map<String, Object>) metadata.get("objects");
+        Map<String, Object> tableObjects = (Map<String, Object>) objects.get("tables");
 
-        if (objects == null || !objects.containsKey(tableName)) {
+        if (!tableObjects.containsKey(tableName)) {
             throw new IllegalArgumentException("Table " + tableName + " not found in metadata");
         }
 
-        Map<String, Object> tableEntry = (Map<String, Object>) objects.get(tableName);
+        Map<String, Object> tableEntry = (Map<String, Object>) tableObjects.get(tableName);
+        String baseName = (String) tableEntry.get("base");
 
-        String baseName = (String) tableEntry.get("basis");
         if (baseName == null) {
             logger.error("No base file found for table " + tableName);
             return null;
         }
 
-        return BASE_PATH + OBJECTS_PATH + "/" + tableName + "/" + baseName;
+        return BASE_PATH + OBJECTS_PATH + OBJECTS_TABLES_PATH + "/" + tableName + "/" + baseName;
     }
 
-    public String getTableCurrentPath(String tableName) {
+    /**
+     * Gets the current file path for a specific table.
+     *
+     * @param tableName the name of the table
+     * @return the current file path for the table's data
+     */
+    public String getTableCurrentFilePath(String tableName) {
         Map<String, Object> objects = (Map<String, Object>) metadata.get("objects");
+        Map<String, Object> tableObjects = (Map<String, Object>) objects.get("tables");
 
-        if (objects == null || !objects.containsKey(tableName)) {
+        if (!tableObjects.containsKey(tableName)) {
             throw new IllegalArgumentException("Table " + tableName + " not found in metadata");
         }
 
-        Map<String, Object> tableEntry = (Map<String, Object>) objects.get(tableName);
-
+        Map<String, Object> tableEntry = (Map<String, Object>) tableObjects.get(tableName);
         String currentName = (String) tableEntry.get("current");
-        if (currentName == null) {
 
+        if (currentName == null) {
             logger.error("No current file found for table " + tableName);
             return null;
         }
 
-        return BASE_PATH + OBJECTS_PATH + "/" + tableName + "/" + currentName;
+        return BASE_PATH + OBJECTS_PATH + OBJECTS_TABLES_PATH + "/" + tableName + "/" + currentName;
     }
 
-    public List<String> getIncrementalFiles(String tableName) {
+    /**
+     * Gets all incremental file paths for a specific table.
+     *
+     * @param tableName the name of the table
+     * @return list of incremental file paths for the table
+     */
+    public List<String> getIncrementalFilePath(String tableName) {
         Map<String, Object> objects = (Map<String, Object>) metadata.get("objects");
-        if (objects != null && objects.containsKey(tableName)) {
-            Map<String, Object> tableEntry = (Map<String, Object>) objects.get(tableName);
-            List<String> incrementalFileNames = (List<String>) tableEntry.getOrDefault("incremental", new ArrayList<>());
+        Map<String, Object> tableObjects = (Map<String, Object>) objects.get("tables");
 
-            // Erstelle den vollständigen Pfad für jede inkrementelle Datei
-            List<String> incrementalFilePaths = new ArrayList<>();
-            for (String fileName : incrementalFileNames) {
-                String fullPath = BASE_PATH + OBJECTS_PATH + "/" + tableName + "/" + fileName;
-                incrementalFilePaths.add(fullPath);
-            }
-
-            return incrementalFilePaths;
+        if (!tableObjects.containsKey(tableName)) {
+            return new ArrayList<>();
         }
-        return new ArrayList<>();
+
+        Map<String, Object> tableEntry = (Map<String, Object>) tableObjects.get(tableName);
+        List<String> incrementalFileNames = (List<String>) tableEntry.getOrDefault("incremental", new ArrayList<>());
+
+        List<String> incrementalFilePaths = new ArrayList<>();
+        for (String fileName : incrementalFileNames) {
+            String fullPath = BASE_PATH + OBJECTS_PATH + OBJECTS_TABLES_PATH + "/" + tableName + "/" + fileName;
+            incrementalFilePaths.add(fullPath);
+        }
+
+        return incrementalFilePaths;
     }
 
-    public List<String> getTableNamesFromMetadata() {
+    /**
+     * Retrieves the list of table names stored in metadata.
+     *
+     * @return list of table names
+     */
+    public List<String> getTableNames() {
         Map<String, Object> objects = (Map<String, Object>) metadata.get("objects");
-        List<String> tableNames = new ArrayList<>();
+        Map<String, Object> tableObjects = (Map<String, Object>) objects.get("tables");
 
-        for (String key : objects.keySet()) {
-            // Überprüfen, ob der Schlüssel ein Tabellenname ist (kein "path")
-            if (!key.equals("path")) {
-                tableNames.add(key);
-            }
-        }
-
-        return tableNames;
+        return new ArrayList<>(tableObjects.keySet());
     }
 }

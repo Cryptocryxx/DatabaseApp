@@ -3,7 +3,6 @@ package org.example.JDBCExporter.Backup;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.JDBCExporter.IncrementalExporter.IncrementalHelper;
-import org.example.JDBCExporter.IncrementalExporter.IncrementalMain;
 import org.example.JDBCExporter.MetaDataController;
 import org.example.Logger.Logger;
 
@@ -158,7 +157,7 @@ public class RestoreBackup {
 
     private String getFilePathToCurrentData(String tableName, String version) {
         if (MetaDataController.getInstance().getCurrentVersionName().equals(version)){
-            return MetaDataController.getInstance().getTableCurrentPath(tableName);
+            return MetaDataController.getInstance().getTableCurrentFilePath(tableName);
         }
         return null;
     }

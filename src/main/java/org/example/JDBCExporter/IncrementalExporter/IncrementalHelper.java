@@ -80,13 +80,13 @@ public class IncrementalHelper {
         Map<String, List<Map<String, Object>>> allTablesData = new HashMap<>();
 
         // Lade die Basisdatei
-        String basePath = metaDataController.getTableBasePath(tableName);
+        String basePath = metaDataController.getTableBaseFilePath(tableName);
         logger.info("Loading base file from: " + basePath);
         List<Map<String, Object>> BackupCurrentData = loadDataFromFile(basePath);
         logger.info("Base data loaded for table " + tableName + ": " + BackupCurrentData);
 
         // Lade alle inkrementellen Dateien
-        List<String> incrementalPaths = metaDataController.getIncrementalFiles(tableName);
+        List<String> incrementalPaths = metaDataController.getIncrementalFilePath(tableName);
         logger.info("Incremental paths for table " + tableName + ": " + incrementalPaths);
 
         for (String path : incrementalPaths) {

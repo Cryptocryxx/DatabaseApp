@@ -1,13 +1,9 @@
 package org.example.JDBCExporter.IncrementalExporter;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.JDBCExporter.FileWriter;
 import org.example.JDBCExporter.MetaDataController;
 import org.example.Logger.Logger;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
@@ -24,23 +20,23 @@ public class IncrementalMain {
 
         try {
             // Hole die Namen aller Tabellen aus den Metadaten
-            List<String> tableNames = metaDataController.getTableNamesFromMetadata();
+            List<String> tableNames = metaDataController.getTableNames();
 
             for (String tableName : tableNames) {
                 logger.info("Processing table: "+ tableName);
 
                 // Lade die Basisdatei
-                String basePath = metaDataController.getTableBasePath(tableName);
+                String basePath = metaDataController.getTableBaseFilePath(tableName);
                 logger.info("Loading base file from: "+ basePath);
                 List<Map<String, Object>> currentData = incrementalHelper.loadDataFromFile(basePath);
                 logger.info("Base data loaded: "+ currentData);
 
                 // Lade alle inkrementellen Dateien in der richtigen Reihenfolge
-                List<String> incrementalPaths = metaDataController.getIncrementalFiles(tableName);
+                List<String> incrementalPaths = metaDataController.getIncrementalFilePath(tableName);
                 logger.info("Incremental paths: "+ incrementalPaths);
 
                 // Speichere den aktuellen Zustand in der Current-Datei
-                String currentPath = metaDataController.getTableCurrentPath(tableName);
+                String currentPath = metaDataController.getTableCurrentFilePath(tableName);
                 logger.info("Saving current data to: "+ currentPath);
                 fileWriter.writeJSONFile(currentPath, currentData);
                 logger.info("Current data saved: "+ currentData);
