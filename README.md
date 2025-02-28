@@ -1,7 +1,6 @@
-
 # DataBack - PostgreSQL Backup Tool
 
-**DataBack** is a terminal-based application designed to help you efficiently backup and restore your PostgreSQL databases. It provides regular backups, only saves differences between backups (incremental backups), and makes restoring data quick and seamless. Here's how DataBack works and what each feature entails:
+**DataBack** is a terminal-based application designed to help you efficiently backup and restore your PostgreSQL databases. The backup only saves differences between backups (incremental backups), and makes restoring data quick and seamless. Here's how DataBack works and what each feature entails:
 
 ## Features
 
@@ -11,9 +10,9 @@ DataBack allows you to easily back up your PostgreSQL databases with a single co
 
 - **Usage**: Run the following command to create a backup:
   ```
-  databack backup --db-name <DATABASE_NAME> --output <BACKUP_FILE_PATH>
+  java -jar databack_SNAPSHOTv1.0.jar backup --db-url <DATABASE_URL> --user <USERNAME> --password <PASSWORD_FOR_USER>
   ```
-- **Explanation**: This command connects to the specified PostgreSQL database and saves the backup to the provided file path.
+- **Explanation**: This command connects to the specified PostgreSQL database and saves the backup to the folder where the .jar lies.
 
 ### 2. Restore Backups
 
@@ -21,76 +20,27 @@ You can restore a database to a previous state using the backup file generated b
 
 - **Usage**: Run the following command to restore from a backup:
   ```
-  databack restore --db-name <DATABASE_NAME> --input <BACKUP_FILE_PATH>
+  java -jar databack_SNAPSHOTv1.0.jar restore --db-url <DATABASE_URL> --user <USERNAME> --password <PASSWORD_FOR_USER> --version <optional param (e.g v3)>
   ```
 - **Explanation**: This command will restore the PostgreSQL database to the state saved in the backup file. You can use this to recover data after accidental loss or corruption.
 
-### 3. Schedule Regular Backups
-
-DataBack supports scheduling backups at regular intervals, allowing you to automate the backup process.
-
-- **Usage**: To schedule regular backups, use the following command:
-  ```
-  databack schedule --db-name <DATABASE_NAME> --interval <TIME_INTERVAL> --output <BACKUP_FILE_PATH>
-  ```
-  Example:
-  ```
-  databack schedule --db-name mydb --interval 24h --output /path/to/backups
-  ```
-- **Explanation**: This command sets up a cron-like job that will automatically back up the database at the specified interval (e.g., daily, weekly). You don't need to manually create backups anymore.
-
-### 4. Incremental Backups (Saving Only Differences)
-
-Instead of storing a full copy of the database every time, DataBack uses incremental backup technology. This means that only the changes made since the last backup are stored, saving both time and disk space.
-
-- **Usage**: DataBack automatically detects changes and stores only the differences when you run the backup command:
-  ```
-  databack backup --db-name <DATABASE_NAME> --output <BACKUP_FILE_PATH> --incremental
-  ```
-- **Explanation**: Incremental backups track what has changed since the last backup and only store the differences. This method drastically reduces the size of your backup files and speeds up the backup process.
-
-## Getting Started
-
 ### Installation
 
-To install DataBack, you can download it from the official repository or install it using a package manager (if available). Ensure that your system meets the following requirements:
-- Python 3.7+
-- PostgreSQL client tools (`psql`)
-- Required Python packages (install with `pip`):
-  ```
-  pip install -r requirements.txt
+To install DataBack, you can download it from this repository. Open a terminal and navigate to the cloned repo. run "nvm clean package" and navigate to the target folder. From there type "java -jar" and add the filename of the generated .jar. There you can add the commands seen above.
+
   ```
 
-### Configuration
-
-Before using DataBack, ensure that your PostgreSQL credentials and configurations are properly set up in the `.env` file or provided as arguments during execution:
-```
-DB_USER=your_username
-DB_PASSWORD=your_password
-DB_HOST=localhost
-DB_PORT=5432
-```
 
 ### Usage Overview
 
 1. **Backup**: Create a new backup with:
    ```
-   databack backup --db-name <DATABASE_NAME> --output <BACKUP_FILE_PATH>
+   databack backup --db-url <DATABASE_URL> --user <USERNAME> --password <PASSWORD_FOR_USER>
    ```
 
 2. **Restore**: Restore from a backup:
    ```
-   databack restore --db-name <DATABASE_NAME> --input <BACKUP_FILE_PATH>
-   ```
-
-3. **Schedule Backups**: Set up regular backups:
-   ```
-   databack schedule --db-name <DATABASE_NAME> --interval <TIME_INTERVAL> --output <BACKUP_FILE_PATH>
-   ```
-
-4. **Incremental Backups**: Backup only changes:
-   ```
-   databack backup --db-name <DATABASE_NAME> --output <BACKUP_FILE_PATH> --incremental
+   databack restore --db-url <DATABASE_URL> --user <USERNAME> --password <PASSWORD_FOR_USER> --version <optional param (e.g v3)>
    ```
 
 ### License
@@ -98,5 +48,3 @@ DB_PORT=5432
 DataBack is released under the [Buesnauer_Ultras](LICENSE). 
 
 ---
-
-This README provides a basic overview of how to use DataBack. For further details, refer to the full documentation or run `databack --help` in your terminal to see a list of all available commands and options.
