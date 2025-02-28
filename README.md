@@ -28,7 +28,6 @@ You can restore a database to a previous state using the backup file generated b
 
 To install DataBack, you can download it from this repository. Open a terminal and navigate to the cloned repo. run "nvm clean package" and navigate to the target folder. From there type "java -jar" and add the filename of the generated .jar. There you can add the commands seen above.
 
-  ```
 
 
 ### Usage Overview
