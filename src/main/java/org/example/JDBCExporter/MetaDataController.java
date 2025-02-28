@@ -140,11 +140,11 @@ public class MetaDataController {
             }else{
                 Map<String, Object> tableEntry = new HashMap<>();
                 tableEntry.put("path", "/" + tableName);
-                tableEntry.put("base", tableName + "_v1.json");
+                tableEntry.put("base", tableName + "_" + nextVersionStr + ".json");
 
                 List<String> incrementalList = new ArrayList<>();
                 tableEntry.put("incremental", incrementalList);
-                tableEntry.put("current", tableName + "_v1.json");
+                tableEntry.put("current", tableName + "_" + nextVersionStr + ".json");
                 tableObjects.put(tableName, tableEntry);
 
                 fileWriter.createDirectory(BASE_PATH + OBJECTS_PATH + OBJECTS_TABLES_PATH + "/" + tableName);

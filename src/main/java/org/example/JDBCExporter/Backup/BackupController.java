@@ -76,9 +76,9 @@ public class BackupController {
      * @throws IOException if an error occurs while handling backups
      */
     public static void main(String[] args) throws SQLException, IOException {
-        BackupController backupController = new BackupController("jdbc:postgresql://localhost:5432/databack", "benutzer", "passwort");
-        //backupController.performBackup();
+        BackupController backupController = new BackupController("jdbc:postgresql://localhost:5432/my_database", "user", "password");
+        backupController.performBackup();
         //backupController.restoreLastBackup();
-        backupController.restoreBackupFromVersion("v3");
+        //backupController.restoreBackupFromVersion("v3");
     }
 }
