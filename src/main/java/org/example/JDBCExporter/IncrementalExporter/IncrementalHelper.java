@@ -118,12 +118,14 @@ public class IncrementalHelper {
             if (file.exists()) {
                 // Extrahiere die Versionsnummer aus dem Dateinamen
                 String fileName = file.getName();
-                String version = fileName.substring(fileName.lastIndexOf("v") + 1);
-
-                // Stoppe, wenn die Zielversion erreicht ist
-                if (version.equals(targetVersion)) {
-                    logger.info("Reached target version: " + targetVersion + " for table " + tableName + ", stopping.");
-                    break;
+                // Extrahiere die Versionsnummer aus dem Dateinamen
+                int vIndex = fileName.indexOf("v");
+                int dotIndex = fileName.indexOf(".", vIndex);
+                String version;
+                if (vIndex != -1 && dotIndex != -1) {
+                    version = fileName.substring(vIndex, dotIndex);
+                }else {
+                    throw new RuntimeException("The filename version could not be read %s".formatted(fileName));
                 }
 
                 if (isIncrementalChangesFile(file)) {
@@ -134,6 +136,11 @@ public class IncrementalHelper {
                     logger.info("File contains full data.");
                     List<Map<String, Object>> fullData = loadDataFromFile(path);
                     BackupCurrentData = new ArrayList<>(fullData);
+                }
+                // Stoppe, wenn die Zielversion erreicht ist
+                if (version.equals(targetVersion)) {
+                    logger.info("Reached target version: " + targetVersion + " for table " + tableName + ", stopping.");
+                    break;
                 }
 
                 logger.info("Temporary current data after processing " + path + " for table " + tableName + ": " + BackupCurrentData);
