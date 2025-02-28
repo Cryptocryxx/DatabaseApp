@@ -46,7 +46,7 @@ public class DataBack implements Callable<Integer> {
                     url);
             try {
                 BackupController backupController = new BackupController(url, user, password);
-                backupController.doBackup();
+                backupController.performBackup();
             } catch (SQLException | IOException e) {
                 throw new RuntimeException(e);
             }
@@ -76,9 +76,9 @@ public class DataBack implements Callable<Integer> {
             try {
                 BackupController backupController = new BackupController(url, user, password);
                 if (version == null) {
-                    backupController.restoreLastBackup(password);
+                    backupController.restoreLastBackup();
                 }else {
-                    backupController.restoreBackupFromVersion(version, password);
+                    backupController.restoreBackupFromVersion(version);
                 }
 
             }catch (SQLException | IOException e) {

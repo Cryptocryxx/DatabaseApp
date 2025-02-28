@@ -29,7 +29,12 @@ public class RestoreBackup {
         this.logger = logger;
     }
 
-    public void performRestore(String version, String password) throws SQLException {
+    /**
+     * Deletes the Data from the given Database and restores the Data from the Backup of the current version or a specific version
+     * @param version Specific Version which is restored (e.g. "v3")
+     * @throws SQLException If there is an Error with the database
+     */
+    public void performRestore(String version) throws SQLException {
         logger.info("Verbindung zur Datenbank hergestellt.");
         this.version = version;
 
@@ -57,6 +62,7 @@ public class RestoreBackup {
         logger.info("Database sucessfully recovered from backup");
         connection.close();
     }
+
 
     private void DeleteDataFromDatabase() throws SQLException {
         DatabaseMetaData metaData = connection.getMetaData();

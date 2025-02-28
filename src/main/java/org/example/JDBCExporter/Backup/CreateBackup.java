@@ -22,6 +22,13 @@ public class CreateBackup {
         this.fileWriter = fileWriter;
     }
 
+    /**
+     * Performs backup by first getting the data of the database and storing it in custom folders.
+     * After that the tables and constraints of the tables gets stored in form of sql commands in a .sql file
+     * Lastly if this is not the first backup the stored data is compared to earlier version and only the changes get stored.
+     * @throws SQLException
+     * @throws IOException
+     */
     public void performBackup() throws SQLException, IOException {
         metaDataController.updateMetaData(connection);
 
