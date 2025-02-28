@@ -22,32 +22,32 @@ public class BackupController {
     private final Logger logger;
     private final FileWriter fileWriter;
 
-    private final CreateBackupHelper createBackupHelper;
-    private final RestoreBackupHelper restoreBackupHelper;
+    private final CreateBackup createBackup;
+    private final RestoreBackup restoreBackup;
 
     public BackupController(String url, String user, String password) throws SQLException {
         this.connection = DriverManager.getConnection(url, user, password);
         this.logger = new Logger();
         this.fileWriter = new FileWriter();
-        this.createBackupHelper = new CreateBackupHelper(connection, logger, fileWriter);
-        this.restoreBackupHelper = new RestoreBackupHelper(connection, logger);
+        this.createBackup = new CreateBackup(connection, logger, fileWriter);
+        this.restoreBackup = new RestoreBackup(connection, logger);
     }
 
     public void doBackup() throws SQLException, IOException {
-        createBackupHelper.performBackup();
+        createBackup.performBackup();
     }
 
     public void restoreBackupFromVersion(String version, String password) throws SQLException, IOException {
-        restoreBackupHelper.performRestore(version, password);
+        restoreBackup.performRestore(version, password);
     }
     public void restoreLastBackup(String password) throws SQLException, IOException {
-        restoreBackupHelper.performRestore(MetaDataController.getInstance().getCurrentVersionName(), password);
+        restoreBackup.performRestore(MetaDataController.getInstance().getCurrentVersionName(), password);
     }
 
     public static void main(String[] args) throws SQLException, IOException {
         BackupController backupController = new BackupController("jdbc:postgresql://localhost:5432/databack", "benutzer", "passwort");
-        backupController.doBackup();
-        //backupController.restoreLastBackup();
+        //backupController.doBackup();
+        //backupController.restoreLastBackup("passwort");
         //backupController.restoreBackupFromVersion("v6", "passwort");
     }
 }

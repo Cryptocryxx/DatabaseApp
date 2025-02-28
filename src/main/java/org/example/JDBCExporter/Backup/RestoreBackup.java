@@ -20,13 +20,13 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-public class RestoreBackupHelper {
+public class RestoreBackup {
 
     private final Connection connection;
     private final Logger logger;
     private String version;
 
-    public RestoreBackupHelper(Connection connection, Logger logger) {
+    public RestoreBackup(Connection connection, Logger logger) {
         this.connection = connection;
         this.logger = logger;
     }
@@ -34,13 +34,10 @@ public class RestoreBackupHelper {
     public void performRestore(String version, String password) throws SQLException {
         logger.info("Verbindung zur Datenbank hergestellt.");
         this.version = version;
-        String tableScriptPath = "./src/main/java/org/example/TestData/tableSchema";
-        String constraintsPath = "./src/main/java/org/example/TestData/Constraints";
-        String dataFilesPath = "./src/main/java/org/example/TestData/Objects";
 
 
-        String tableScriptFile = tableScriptPath + "/create_tables_" + version + ".sql";
-        String constraintsFile = constraintsPath + "/add_constraints_" + version + ".sql";
+        String tableScriptFile = MetaDataController.getInstance().getTableSchemaFilePath(version);
+        String constraintsFile = MetaDataController.getInstance().getConstraintsFilePath(version);
 
         Statement statement = connection.createStatement();
         String[] splitUrl = connection.getMetaData().getURL().split("/");
@@ -52,15 +49,16 @@ public class RestoreBackupHelper {
         databaseName = createNewDatabase(statement, databaseName);
         URL = URL.concat("/" + databaseName);
         Connection connectionToNewDatabase = DriverManager.getConnection(URL, connection.getMetaData().getUserName(), password);
-
+        logger.info("Creating Tables in new Database...");
         executeSqlScript(connectionToNewDatabase, tableScriptFile, false);
-
+        logger.info("Generating Data from JSON file");
         String insertQuery = generateInsertQuery(version);
+        logger.info("Inserting Data in new Database...");
         executeSqlScript(connectionToNewDatabase, insertQuery, true);
-
+        logger.info("Altering Tables and adding Constraints...");
         executeSqlScript(connectionToNewDatabase, constraintsFile, false);
 
-        logger.info("Backup erfolgreich wiederhergestellt.");
+        logger.info("Database sucessfully recovered from backup");
         connection.close();
     }
 
@@ -74,6 +72,7 @@ public class RestoreBackupHelper {
                 break;
             } catch (PSQLException e) {
                 logger.warn(e.getMessage());
+                if (databaseName.length() >= 63) throw new RuntimeException("The Databasename got too long please delete some copys and retry!");
                 databaseName = databaseName.concat("copy");
             }
         }while (true);
@@ -149,6 +148,7 @@ public class RestoreBackupHelper {
                         .append(System.lineSeparator());
             }
         }
+        logger.info("Succesfully generated Insert comands");
         return queryBuilder.toString();
     }
 
@@ -166,7 +166,7 @@ public class RestoreBackupHelper {
         File[] tableFolders = folder.listFiles(File::isDirectory);
 
         if (tableFolders == null) {
-            logger.error("Keine Daten zum Importieren gefunden.");
+            logger.error("No data for import found!");
             return null;
         }
         String[] tableNames = new String[tableFolders.length];
@@ -221,9 +221,9 @@ public class RestoreBackupHelper {
             try (Statement stmt = connection.createStatement()) {
                 stmt.execute(sql);
             }
-            logger.info("SQL-Skript ausgeführt");
+            logger.info("SQL-script succesfully executed!");
         } catch (IOException | SQLException e) {
-            logger.error("Fehler beim Ausführen des SQL-Skripts:" + " - " + e.getMessage());
+            logger.error("Error at execution of SQL-scripts:" + " - " + e.getMessage());
             throw new RuntimeException(e);
         }
     }

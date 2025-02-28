@@ -6,15 +6,17 @@ import org.example.Logger.Logger;
 
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 
-public class CreateBackupHelper {
+public class CreateBackup {
     private final Connection connection;
     private final Logger logger;
     private final FileWriter fileWriter;
     MetaDataController metaDataController = MetaDataController.getInstance();
 
-    public CreateBackupHelper(Connection connection, Logger logger, FileWriter fileWriter) {
+    public CreateBackup(Connection connection, Logger logger, FileWriter fileWriter) {
         this.connection = connection;
         this.logger = logger;
         this.fileWriter = fileWriter;
