@@ -50,6 +50,10 @@ public class RestoreBackup {
 
         String tableScriptFile = MetaDataController.getInstance().getTableSchemaFilePath(version);
         String constraintsFile = MetaDataController.getInstance().getConstraintsFilePath(version);
+        if (tableScriptFile == null || constraintsFile == null) {
+            return;
+        }
+
 
         DeleteDataFromDatabase();
         logger.info("Creating Tables in Database...");

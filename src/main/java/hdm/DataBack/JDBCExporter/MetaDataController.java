@@ -283,6 +283,11 @@ public class MetaDataController {
         Map<String, Object> constraints = (Map<String, Object>) metadata.get("constraints");
         List<String> versions = (List<String>) constraints.get("versions");
 
+        if (versions.size() == 0) {
+            logger.error("There were no Backups found for the constraints please first create a Backup");
+            return null;
+        }
+
         String fileName;
         if (version == null || version.isEmpty()) {
             fileName = versions.get(versions.size() - 1);
@@ -306,6 +311,11 @@ public class MetaDataController {
     public String getTableSchemaFilePath(String version) {
         Map<String, Object> tableSchema = (Map<String, Object>) metadata.get("tableSchema");
         List<String> versions = (List<String>) tableSchema.get("versions");
+
+        if (versions.size() == 0) {
+            logger.error("There were no Backups found for the scheme please first create a Backup");
+            return null;
+        }
 
         String fileName;
         if (version == null || version.isEmpty()) {
