@@ -2,6 +2,7 @@ package org.example.JDBCExporter.Backup;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.example.JDBCExporter.IncrementalExporter.IncrementalHelper;
 import org.example.JDBCExporter.IncrementalExporter.IncrementalMain;
 import org.example.JDBCExporter.MetaDataController;
 import org.example.Logger.Logger;
@@ -104,9 +105,9 @@ public class RestoreBackup {
                 String filePathToCurrentData = getFilePathToCurrentData(tableName, version);
                 data = generateInsertQueryFromJson(filePathToCurrentData);
             }else {
-                IncrementalMain incrementalMain = new IncrementalMain();
+                IncrementalHelper incrementalHelper = new IncrementalHelper();
                 try {
-                    data = incrementalMain.getBackupCurrentData(version, tableName);
+                    data = incrementalHelper.getBackupCurrentData(version, tableName);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
