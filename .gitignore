@@ -1,6 +1,7 @@
 
 src/main/java/data
 target/
+BackupData/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
