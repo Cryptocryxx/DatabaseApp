@@ -1,9 +1,12 @@
 package org.example.CommandLine;
 
+import org.example.JDBCExporter.Backup.BackupController;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
+import java.io.IOException;
+import java.sql.SQLException;
 import java.util.concurrent.Callable;
 
 @Command(name = "databack", mixinStandardHelpOptions = true, version = "DataBack 1.0",
@@ -25,22 +28,31 @@ public class DataBack implements Callable<Integer> {
     }
 
     @Command(name = "backup", mixinStandardHelpOptions = true,
-            description = "Create a backup of a PostgreSQL database.")
+            description = "Create an incremental backup of a PostgreSQL database.")
     static class BackupCommand implements Callable<Integer> {
 
-        @Option(names = {"--db-name"}, required = true, description = "Name of the database to back up.")
-        private String dbName;
+        @Option(names = {"--db-url"}, required = true, description = "url of the postgres database without user and password")
+        private String url;
 
-        @Option(names = {"--output"}, required = true, description = "File path where the backup will be stored.")
+        @Option(names = {"--user"}, required = true, description = "Name of the user with access to the database")
+        private String user;
+
+        @Option(names = {"--password"}, required = true, description = "the password for the user")
+        private String password;
+
+        @Option(names = {"--output"}, required = false, description = "File path where the backup will be stored.")
         private String outputPath;
-
-        @Option(names = {"--incremental"}, description = "Perform an incremental backup to save only the changes.")
-        private boolean incremental;
 
         @Override
         public Integer call() {
-            System.out.printf("Backing up database '%s' to '%s'%s%n",
-                    dbName, outputPath, incremental ? " (incremental)" : "");
+            System.out.printf("Backing up database '%s' to '%s'",
+                    url, outputPath);
+            try {
+                BackupController backupController = new BackupController(url, user, password);
+                backupController.doBackup();
+            } catch (SQLException | IOException e) {
+                throw new RuntimeException(e);
+            }
             return 0;
         }
     }
@@ -49,15 +61,32 @@ public class DataBack implements Callable<Integer> {
             description = "Restore a PostgreSQL database from a backup file.")
     static class RestoreCommand implements Callable<Integer> {
 
-        @Option(names = {"--db-name"}, required = true, description = "Name of the database to restore.")
-        private String dbName;
+        @Option(names = {"--db-url"}, required = true, description = "url of the postgres database without user and password")
+        private String url;
 
-        @Option(names = {"--input"}, required = true, description = "Path to the backup file.")
-        private String inputPath;
+        @Option(names = {"--user"}, required = true, description = "Name of the user with access to the database")
+        private String user;
+
+        @Option(names = {"--password"}, required = true, description = "the password for the user")
+        private String password;
+
+        @Option(names = {"--version"}, required = false, description = "version name (e.g: 'v4'")
+        private String version;
 
         @Override
         public Integer call() {
-            System.out.printf("Restoring database '%s' from '%s'%n", dbName, inputPath);
+            System.out.printf("Restoring database '%s' from '%s'%n", url, version);
+            try {
+                BackupController backupController = new BackupController(url, user, password);
+                if (version == null) {
+                    backupController.restoreLastBackup(password);
+                }else {
+                    backupController.restoreBackupFromVersion(version, password);
+                }
+
+            }catch (SQLException | IOException e) {
+                throw new RuntimeException(e);
+            }
             return 0;
         }
     }

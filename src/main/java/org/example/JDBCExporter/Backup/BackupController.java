@@ -23,29 +23,32 @@ public class BackupController {
     private final CreateBackupHelper createBackupHelper;
     private final RestoreBackupHelper restoreBackupHelper;
 
-    public BackupController() throws SQLException {
-        this.connection = DriverManager.getConnection(URL, USER, PASSWORD);
+    public BackupController(String url, String user, String password) throws SQLException {
+        this.connection = DriverManager.getConnection(url, user, password);
         this.logger = new Logger();
         this.fileWriter = new FileWriter();
         this.createBackupHelper = new CreateBackupHelper(connection, logger, fileWriter);
-        this.restoreBackupHelper = new RestoreBackupHelper(connection, logger, PASSWORD);
+        this.restoreBackupHelper = new RestoreBackupHelper(connection, logger);
     }
 
     public void doBackup() throws SQLException, IOException {
-        createBackupHelper.performBackup();
+        createBackupHelper.performBackup(null);
+    }
+    public void doBackup(String outputPath) throws SQLException, IOException {
+        createBackupHelper.performBackup(outputPath);
     }
 
-    public void restoreBackupFromVersion(String version) throws SQLException, IOException {
-        restoreBackupHelper.performRestore(version);
+    public void restoreBackupFromVersion(String version, String password) throws SQLException, IOException {
+        restoreBackupHelper.performRestore(version, password);
     }
-    public void restoreLastBackup() throws SQLException, IOException {
-        restoreBackupHelper.performRestore(MetaDataController.getInstance().getCurrentVersionName());
+    public void restoreLastBackup(String password) throws SQLException, IOException {
+        restoreBackupHelper.performRestore(MetaDataController.getInstance().getCurrentVersionName(), password);
     }
 
     public static void main(String[] args) throws SQLException, IOException {
-        BackupController backupController = new BackupController();
-        //backupController.doBackup();
+        BackupController backupController = new BackupController("jdbc:postgresql://localhost:5432/databack", "benutzer", "passwort");
+        backupController.doBackup("..");
         //backupController.restoreLastBackup();
-        backupController.restoreBackupFromVersion("v6");
+        //backupController.restoreBackupFromVersion("v6", "passwort");
     }
 }

@@ -28,16 +28,14 @@ public class RestoreBackupHelper {
 
     private final Connection connection;
     private final Logger logger;
-    private final String PASSWORD;
     private String version;
 
-    public RestoreBackupHelper(Connection connection, Logger logger, String password) {
+    public RestoreBackupHelper(Connection connection, Logger logger) {
         this.connection = connection;
         this.logger = logger;
-        this.PASSWORD = password;
     }
 
-    public void performRestore(String version) throws SQLException {
+    public void performRestore(String version, String password) throws SQLException {
         logger.info("Verbindung zur Datenbank hergestellt.");
         this.version = version;
         String tableScriptPath = "./src/main/java/org/example/TestData/tableSchema";
@@ -58,7 +56,7 @@ public class RestoreBackupHelper {
 
         databaseName = createNewDatabase(statement, databaseName);
         URL = URL.concat("/" + databaseName);
-        Connection connectionToNewDatabase = DriverManager.getConnection(URL, connection.getMetaData().getUserName(), PASSWORD);
+        Connection connectionToNewDatabase = DriverManager.getConnection(URL, connection.getMetaData().getUserName(), password);
 
         executeSqlScript(connectionToNewDatabase, tableScriptFile, false);
 

@@ -20,8 +20,8 @@ public class CreateBackupHelper {
         this.fileWriter = fileWriter;
     }
 
-    public void performBackup() throws SQLException, IOException {
-
+    public void performBackup(String outputPath) throws SQLException, IOException {
+        if (outputPath != null) MetaDataController.getInstance().setBasePath(outputPath);
         metaDataController.updateMetaData(connection);
 
         exportObjects();
