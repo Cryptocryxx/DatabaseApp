@@ -30,12 +30,6 @@
       <artifactId>jackson-databind</artifactId>
       <version>2.18.1</version> <!-- Überprüfe die neueste Version -->
     </dependency>
-
-    <dependency>
-      <groupId>org.apache.logging.log4j</groupId>
-      <artifactId>log4j-core</artifactId>
-      <version>2.20.0</version>
-    </dependency>
     <dependency>
       <groupId>org.postgresql</groupId>
       <artifactId>postgresql</artifactId>
@@ -45,21 +39,6 @@
       <groupId>info.picocli</groupId>
       <artifactId>picocli</artifactId>
       <version>4.7.6</version>
-    </dependency>
-
-
-    <!-- Optional: JBoss Logging für Hibernate Logging -->
-    <dependency>
-      <groupId>org.jboss.logging</groupId>
-      <artifactId>jboss-logging</artifactId>
-      <version>3.4.1.Final</version> <!-- Überprüfe die neueste Version -->
-    </dependency>
-
-    <!-- Optional: JPA API -->
-    <dependency>
-      <groupId>javax.persistence</groupId>
-      <artifactId>javax.persistence-api</artifactId>
-      <version>2.2</version> <!-- Überprüfe die neueste Version -->
     </dependency>
   </dependencies>
 
