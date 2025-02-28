@@ -57,7 +57,19 @@ public class ObjectExporter {
             while (tables.next()) {
                 Map<String, Object> row = new HashMap<>();
                 for (int i = 1; i <= columnCount; i++) {
-                    row.put(metaData.getColumnName(i), tables.getObject(i));
+                    String columnName = metaData.getColumnName(i);
+                    Object value = tables.getObject(i);
+
+
+                    if (value instanceof java.sql.Date) {
+                        java.sql.Date sqlDate = (java.sql.Date) value;
+                        row.put(columnName, sqlDate.toString());
+                    } else if (value instanceof java.sql.Timestamp) {
+                        java.sql.Timestamp timestamp = (java.sql.Timestamp) value;
+                        row.put(columnName, timestamp.toLocalDateTime().toString());
+                    } else {
+                        row.put(columnName, value); // Keep other values as-is
+                    }
                 }
                 data.add(row);
             }

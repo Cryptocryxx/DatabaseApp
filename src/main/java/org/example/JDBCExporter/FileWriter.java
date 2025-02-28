@@ -31,7 +31,7 @@ public class FileWriter {
                 Map<String, Object> indexedEntry = new HashMap<>();
                 indexedEntry.put("index", UUID.randomUUID().toString());
                 indexedEntry.put("object", entry);
-
+                logger.info("Writing entry: " + entry);
                 indexedData.add(indexedEntry);
             }
             File jsonFile = new File(filePath);
