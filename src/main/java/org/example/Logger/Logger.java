@@ -36,14 +36,31 @@ public class Logger {
         INFO, DEBUG, WARN, ERROR
     }
 
+    /**
+     * Default constructor for Logger.
+     * - Logs messages at INFO level or higher to the terminal.
+     */
     public Logger() {
         this(LogLevel.INFO, null);
     }
 
+    /**
+     * Constructor for Logger with a specified log level.
+     * - Logs messages at the given level or higher to the terminal.
+     *
+     * @param logLevel the minimum log level to display messages
+     */
     public Logger(LogLevel logLevel) {
         this(logLevel, null);
     }
 
+    /**
+     * Constructor for Logger with a specified log level and log file path.
+     * - Logs messages at the given level or higher to the terminal and optionally to a file.
+     *
+     * @param logLevel the minimum log level to display messages
+     * @param logFilePath the file path to save log messages (optional)
+     */
     public Logger(LogLevel logLevel, String logFilePath) {
         this.logLevel = logLevel != null ? logLevel : LogLevel.INFO;
         this.logFilePath = logFilePath;
@@ -78,18 +95,38 @@ public class Logger {
         }
     }
 
+    /**
+     * Logs an INFO level message to the terminal and optionally to a file.
+     *
+     * @param message the message to log
+     */
     public void info(String message) {
         log(LogLevel.INFO, message);
     }
 
+    /**
+     * Logs a DEBUG level message to the terminal and optionally to a file.
+     *
+     * @param message the message to log
+     */
     public void debug(String message) {
         log(LogLevel.DEBUG, message);
     }
 
+    /**
+     * Logs a WARN level message to the terminal and optionally to a file.
+     *
+     * @param message the message to log
+     */
     public void warn(String message) {
         log(LogLevel.WARN, message);
     }
 
+    /**
+     * Logs an ERROR level message to the terminal and optionally to a file.
+     *
+     * @param message the message to log
+     */
     public void error(String message) {
         log(LogLevel.ERROR, message);
     }

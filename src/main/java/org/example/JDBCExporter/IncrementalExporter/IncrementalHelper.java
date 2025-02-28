@@ -17,7 +17,14 @@ public class IncrementalHelper {
     static FileWriter fileWriter = new FileWriter();
     static ObjectMapper objectMapper = new ObjectMapper();
 
-
+    /**
+     * Compares the current data with the latest incremental backup and updates the incremental files accordingly.
+     *
+     * @param incrementalPaths list of file paths to incremental backup files
+     * @param currentData the latest current data from the database
+     * @param currentPath the file path to store updated current data
+     * @throws IOException if an error occurs while reading or writing files
+     */
     public void compareCurrentToIncremental(List<String> incrementalPaths, List<Map<String, Object>> currentData, String currentPath) throws IOException {
         if (!incrementalPaths.isEmpty()) {
             String latestIncrementalPath = incrementalPaths.get(incrementalPaths.size() - 1);
@@ -53,6 +60,13 @@ public class IncrementalHelper {
         }
     }
 
+    /**
+     * Applies incremental changes from a list of incremental backup files to the current dataset.
+     *
+     * @param incrementalPaths list of file paths to incremental backup files
+     * @param currentData the dataset to update with incremental changes
+     * @throws IOException if an error occurs while reading files
+     */
     void applyIncrementalChanges(List<String> incrementalPaths, List<Map<String, Object>> currentData) throws IOException {
         for (String path : incrementalPaths) {
             File file = new File(path);
@@ -75,6 +89,14 @@ public class IncrementalHelper {
         }
     }
 
+    /**
+     * Retrieves the reconstructed data for a specific backup version of a table.
+     *
+     * @param targetVersion the target backup version to retrieve
+     * @param tableName the name of the table to restore
+     * @return a list of maps representing the table's reconstructed data
+     * @throws IOException if an error occurs while reading files
+     */
     public List<Map<String, Object>> getBackupCurrentData(String targetVersion, String tableName) throws IOException {
         MetaDataController metaDataController = MetaDataController.getInstance();
         Map<String, List<Map<String, Object>>> allTablesData = new HashMap<>();
@@ -124,7 +146,11 @@ public class IncrementalHelper {
     }
 
     /**
-     * Überprüft, ob eine Datei inkrementelle Änderungen enthält.
+     * Determines whether a file contains incremental changes rather than full data.
+     *
+     * @param file the file to check
+     * @return true if the file contains incremental changes, false otherwise
+     * @throws IOException if an error occurs while reading the file
      */
     private boolean isIncrementalChangesFile(File file) throws IOException {
         if (!file.exists()) {
@@ -149,7 +175,11 @@ public class IncrementalHelper {
     }
 
     /**
-     * Lädt Daten aus einer JSON-Datei.
+     * Loads table data from a JSON file.
+     *
+     * @param filePath the path to the JSON file
+     * @return a list of maps representing the table data
+     * @throws IOException if an error occurs while reading the file
      */
     List<Map<String, Object>> loadDataFromFile(String filePath) throws IOException {
         File file = new File(filePath);
@@ -160,8 +190,13 @@ public class IncrementalHelper {
             return new ArrayList<>();
         }
     }
+
     /**
-     * Lädt inkrementelle Änderungen aus einer JSON-Datei.
+     * Loads incremental changes from a JSON file.
+     *
+     * @param filePath the path to the JSON file
+     * @return a map containing added and deleted data changes
+     * @throws IOException if an error occurs while reading the file
      */
     private Map<String, Object> loadIncrementalChangesFromFile(String filePath) throws IOException {
         File file = new File(filePath);
@@ -172,7 +207,12 @@ public class IncrementalHelper {
         }
     }
 
-
+    /**
+     * Applies incremental changes to the current dataset.
+     *
+     * @param currentData the dataset to update
+     * @param changes a map containing added and deleted data changes
+     */
     private void applyIncrementalChangesInFile(List<Map<String, Object>> currentData, Map<String, Object> changes) {
         // Lösche gelöschte Einträge
         List<String> deletedIndices = (List<String>) changes.getOrDefault("deleted", new ArrayList<>());
@@ -194,8 +234,13 @@ public class IncrementalHelper {
             }
         }
     }
+
     /**
-     * Vergleicht alte und neue Daten und gibt die Unterschiede zurück.
+     * Compares old and new datasets and identifies differences.
+     *
+     * @param oldData the previous dataset
+     * @param newData the new dataset
+     * @return a map containing lists of added and deleted records
      */
     public Map<String, Object> compareData(List<Map<String, Object>> oldData, List<Map<String, Object>> newData) {
         List<Map<String, Object>> added = new ArrayList<>();

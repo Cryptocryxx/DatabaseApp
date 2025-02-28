@@ -18,12 +18,23 @@ public class SchemaExporter {
     private final StringBuilder tableScript;
     private final StringBuilder constraintsScript;
 
+    /**
+     * Constructor for SchemaExporter that initializes a database connection.
+     *
+     * @param connection the database connection
+     */
     public SchemaExporter(Connection connection) {
         this.connection = connection;
         this.tableScript = new StringBuilder();
         this.constraintsScript = new StringBuilder();
     }
 
+    /**
+     * Generates SQL scripts for creating tables in the database.
+     *
+     * @return a string containing SQL CREATE TABLE statements
+     * @throws SQLException if a database access error occurs
+     */
     public String generateTableScript() throws SQLException {
         logger.info("Start generating table scripts...");
         List<String> tableNames = getTableNames();
@@ -39,6 +50,12 @@ public class SchemaExporter {
         return tableScript.toString();
     }
 
+    /**
+     * Generates SQL scripts for adding constraints (primary keys, foreign keys, unique, check constraints).
+     *
+     * @return a string containing SQL ALTER TABLE statements for constraints
+     * @throws SQLException if a database access error occurs
+     */
     public String generateConstraintsScript() throws SQLException {
         logger.info("Start generating constraints scripts...");
         List<String> tableNames = getTableNames();
@@ -57,6 +74,12 @@ public class SchemaExporter {
         return constraintsScript.toString();
     }
 
+    /**
+     * Retrieves the list of table names from the database.
+     *
+     * @return a list of table names
+     * @throws SQLException if a database access error occurs
+     */
     private List<String> getTableNames() throws SQLException {
         logger.info("Fetching table names from the database...");
         String query = String.format("""
@@ -75,6 +98,13 @@ public class SchemaExporter {
         return tableNames;
     }
 
+    /**
+     * Retrieves column definitions for a given table.
+     *
+     * @param tableName the name of the table
+     * @return a list of column definitions in SQL format
+     * @throws SQLException if a database access error occurs
+     */
     private List<String> getColumnDefinitions(String tableName) throws SQLException {
         logger.info(String.format("Fetching column definitions for table: %s", tableName));
         String query = String.format("""
@@ -112,7 +142,12 @@ public class SchemaExporter {
         return columnDefinitions;
     }
 
-
+    /**
+     * Retrieves primary key constraints for a given table and appends them to the constraints script.
+     *
+     * @param tableName the name of the table
+     * @throws SQLException if a database access error occurs
+     */
     private void getPrimaryKeys(String tableName) throws SQLException {
         String query = String.format("""
         SELECT kcu.column_name
@@ -142,6 +177,12 @@ public class SchemaExporter {
         }
     }
 
+    /**
+     * Retrieves foreign key constraints for a given table and appends them to the constraints script.
+     *
+     * @param tableName the name of the table
+     * @throws SQLException if a database access error occurs
+     */
     private void getForeignKeys(String tableName) throws SQLException {
         String query = String.format("""
             SELECT kcu.constraint_name, kcu.column_name, ccu.table_name AS referenced_table, ccu.column_name AS referenced_column 
@@ -163,6 +204,12 @@ public class SchemaExporter {
         }
     }
 
+    /**
+     * Retrieves unique constraints for a given table and appends them to the constraints script.
+     *
+     * @param tableName the name of the table
+     * @throws SQLException if a database access error occurs
+     */
     private void getUniqueConstraints(String tableName) throws SQLException {
         String query = String.format("""
             SELECT tc.constraint_name, kcu.column_name
@@ -181,6 +228,12 @@ public class SchemaExporter {
         }
     }
 
+    /**
+     * Retrieves check constraints for a given table and appends them to the constraints script.
+     *
+     * @param tableName the name of the table
+     * @throws SQLException if a database access error occurs
+     */
     private void getCheckConstraints(String tableName) throws SQLException {
         String checkQuery = String.format("""
             SELECT cc.constraint_name, cc.check_clause

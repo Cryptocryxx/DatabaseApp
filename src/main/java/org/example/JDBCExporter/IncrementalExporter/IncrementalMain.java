@@ -12,8 +12,15 @@ public class IncrementalMain {
     static Logger logger = new Logger();
     static FileWriter fileWriter = new FileWriter();
     IncrementalHelper incrementalHelper = new IncrementalHelper();
+
     /**
-     * Verarbeitet alle Tabellen und aktualisiert die Current-Datei basierend auf der Basisdatei und den inkrementellen Dateien.
+     * Processes all tables by updating the current data file based on the base file and incremental backups.
+     * - Loads the base file for each table.
+     * - Applies all incremental changes in the correct order.
+     * - Saves the latest state to the current data file.
+     * - Compares the current data file with the latest incremental backup to detect further changes.
+     *
+     * @throws IOException if an error occurs while reading or writing files
      */
     public void processTables() throws IOException {
         MetaDataController metaDataController = MetaDataController.getInstance();

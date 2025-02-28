@@ -14,6 +14,13 @@ public class FileWriter {
     Logger logger = new Logger();
     ObjectMapper objectMapper = new ObjectMapper();
 
+    /**
+     * Writes the given content to a file at the specified file path.
+     *
+     * @param filePath the path of the file to write
+     * @param content the content to write to the file
+     * @throws IOException if an error occurs while writing to the file
+     */
     public void writeFile(String filePath, String content) throws IOException {
         try(java.io.FileWriter writer = new java.io.FileWriter(filePath)){
             writer.write(content);
@@ -23,6 +30,13 @@ public class FileWriter {
         }
     }
 
+    /**
+     * Writes a list of maps to a JSON file, adding unique indexes to each entry.
+     *
+     * @param filePath the path of the JSON file to write
+     * @param data the list of maps containing the data to write
+     * @throws IOException if an error occurs while writing to the JSON file
+     */
     public void writeJSONFile(String filePath, List<Map<String, Object>> data) throws IOException {
         try {
             List<Map<String, Object>> indexedData = new ArrayList<>();
@@ -42,6 +56,13 @@ public class FileWriter {
         }
     }
 
+    /**
+     * Writes a map to a JSON file using a pretty-printed format.
+     *
+     * @param filePath the path of the JSON file to write
+     * @param data the map containing the data to write
+     * @throws IOException if an error occurs while writing to the JSON file
+     */
     public void writeJSONFile(String filePath, Map<String, Object> data) throws IOException {
         try {
             File jsonFile = new File(filePath);
@@ -52,6 +73,13 @@ public class FileWriter {
         }
     }
 
+    /**
+     * Writes a list of maps to a JSON file without modifying the data or adding indexes.
+     *
+     * @param filePath the path of the JSON file to write
+     * @param data the list of maps containing the data to write
+     * @throws IOException if an error occurs while writing to the JSON file
+     */
     public void writeJSONFileWithoutIndex(String filePath, List<Map<String, Object>> data) throws IOException {
         try {
             File jsonFile = new File(filePath);
@@ -63,6 +91,11 @@ public class FileWriter {
         }
     }
 
+    /**
+     * Creates a directory at the specified file path, including any necessary parent directories.
+     *
+     * @param filePath the path of the directory to create
+     */
     public void createDirectory(String filePath){
         Path path = Paths.get(filePath);
 
@@ -73,23 +106,5 @@ public class FileWriter {
             logger.error(String.format("Error creating directory %s: %s", filePath, e.getMessage()));
         }
 
-    }
-
-    public List<Map<String, Object>> readJSONFile(String path) {
-        try {
-            File jsonFile = new File(path);
-            if (!jsonFile.exists()) {
-                logger.warn("JSON-Datei nicht gefunden: " + path);
-                return List.of();
-            }
-
-            ObjectMapper objectMapper = new ObjectMapper();
-            List<Map<String, Object>> data = objectMapper.readValue(jsonFile, List.class);
-            logger.info("JSON-Datei erfolgreich gelesen: " + path);
-            return data;
-        } catch (IOException e) {
-            logger.error("Fehler beim Lesen der JSON-Datei: " + path + " - " + e.getMessage());
-            return List.of();
-        }
     }
 }

@@ -23,19 +23,26 @@ public class RestoreBackup {
     private final Logger logger;
     private String version;
 
+    /**
+     * Constructor for RestoreBackup that initializes a database connection and logger.
+     *
+     * @param connection the database connection
+     * @param logger the logger instance for logging operations
+     */
     public RestoreBackup(Connection connection, Logger logger) {
         this.connection = connection;
         this.logger = logger;
     }
 
     /**
-     * Deletes the Data from the given Database and restores the Data from the Backup of the current version or a specific version
-     * First the Data is deleted by deleting all tables of the database with CASCADE.
-     * Then the stored table script under that version is executed.
-     * After that The stored data is transformed in insert commands and executed.
-     * Lastly the constraints are executes.
-     * @param version Specific Version which is restored (e.g. "v3")
-     * @throws SQLException If there is an Error with the database
+     * Restores the database from a specified backup version.
+     * - Deletes existing tables and data.
+     * - Recreates tables using the stored schema.
+     * - Inserts data from the backup files.
+     * - Restores constraints.
+     *
+     * @param version the version identifier in the format "v<VERSION_NUMBER>"
+     * @throws SQLException if a database access error occurs
      */
     public void performRestore(String version) throws SQLException {
         logger.info("Verbindung zur Datenbank hergestellt.");
@@ -58,7 +65,11 @@ public class RestoreBackup {
         connection.close();
     }
 
-
+    /**
+     * Deletes all tables in the database with CASCADE, removing all existing data.
+     *
+     * @throws SQLException if a database access error occurs
+     */
     private void DeleteDataFromDatabase() throws SQLException {
         DatabaseMetaData metaData = connection.getMetaData();
 
@@ -82,6 +93,12 @@ public class RestoreBackup {
         }
     }
 
+    /**
+     * Reads JSON data from a file and converts it into a list of maps representing table rows.
+     *
+     * @param filePath the path to the JSON file
+     * @return a list of maps containing table data
+     */
     private List<Map<String, Object>> generateInsertQueryFromJson(String filePath) {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
@@ -94,6 +111,12 @@ public class RestoreBackup {
         }
     }
 
+    /**
+     * Generates an SQL insert query from JSON backup data.
+     *
+     * @param version the backup version to restore
+     * @return a string containing the SQL insert queries for all tables
+     */
     private String generateInsertQuery(String version){
         String[] tableNames = getTableNames();
         if (tableNames == null) {
@@ -155,6 +178,13 @@ public class RestoreBackup {
         return queryBuilder.toString();
     }
 
+    /**
+     * Retrieves the file path to the current data of a given table.
+     *
+     * @param tableName the name of the table
+     * @param version the backup version to restore
+     * @return the file path to the current JSON backup file
+     */
     private String getFilePathToCurrentData(String tableName, String version) {
         if (MetaDataController.getInstance().getCurrentVersionName().equals(version)){
             return MetaDataController.getInstance().getTableCurrentFilePath(tableName);
@@ -162,7 +192,11 @@ public class RestoreBackup {
         return null;
     }
 
-
+    /**
+     * Retrieves the list of table names from the metadata storage.
+     *
+     * @return an array of table names
+     */
     private String[] getTableNames() {
         String filePath = MetaDataController.getInstance().getObjectsFilePath();
         File folder = new File(filePath);
@@ -180,8 +214,12 @@ public class RestoreBackup {
         return tableNames;
     }
 
-
-
+    /**
+     * Formats a value for safe SQL insertion.
+     *
+     * @param value the value to format
+     * @return the formatted SQL-compatible string
+     */
     private String formatValue(Object value) {
         if (value == null) {
             return "NULL";
@@ -199,20 +237,36 @@ public class RestoreBackup {
         }
     }
 
-    // Prüft, ob die Zahl ein UNIX-Timestamp ist (Millisekunden seit 1970)
+    /**
+     * Checks if a number represents a possible UNIX timestamp.
+     *
+     * @param value the number to check
+     * @return true if the number is a valid timestamp, false otherwise
+     */
     private boolean isPossibleTimestamp(Number value) {
         long timestamp = value.longValue();
         return timestamp > 1_000_000_000L; // Prüft, ob größer als Sekunden-Timestamp
     }
 
-    // Konvertiert Timestamp in SQL-Datum (YYYY-MM-DD)
+    /**
+     * Converts a UNIX timestamp into a SQL-compatible date string.
+     *
+     * @param value the timestamp value
+     * @return the formatted date string (YYYY-MM-DD)
+     */
     private String convertTimestampToDate(Number value) {
         Date date = new Date(value.longValue());
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         return dateFormat.format(date);
     }
 
-
+    /**
+     * Executes an SQL script or query on the database.
+     *
+     * @param connection the database connection
+     * @param filePathOrQuery the file path to an SQL script or the SQL query itself
+     * @param isQuery whether the input is a direct SQL query (true) or a file path (false)
+     */
     private void executeSqlScript(Connection connection, String filePathOrQuery, boolean isQuery) {
         try {
             String sql;
